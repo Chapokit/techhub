@@ -1,7 +1,6 @@
-from mongoengine import Document, fields, connect, StringField, IntField, FloatField, ListField, EmbeddedDocument, EmbeddedDocumentListField
+from mongoengine import Document, fields, connect
 from dotenv import load_dotenv
 import os
-import datetime
 
 load_dotenv()
 connect('techhub', host=str(os.getenv("MONGODB_URI")))
@@ -16,9 +15,9 @@ class User(Document):
     level = fields.IntField(default=1)
     exp = fields.IntField(default=0)
 
-    # 3. Inventory
+    # 3. Inventory (Dictionary field)
+    fragment = fields.DictField(default=lambda: {"a": [0], "b": [0], "c": [0]})
 
-
-    # 4.Gacha Roll
+    # 4. Gacha Roll
     roll_left = fields.IntField(default=0)
     roll_count = fields.IntField(default=0)
