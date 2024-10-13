@@ -38,13 +38,14 @@ class ShowProfile(discord.ui.View):
         @discord.ui.button(label="Show Profile 📝", style=discord.ButtonStyle.primary, row=0)
         async def show_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
             # Create an instance of the ProfileDisplay class and call its display_profile method
-            profile_display = ProfileDisplay(user_id=interaction.user.id)
+            profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
             await profile_display.send_profile(interaction)
 
 class ProfileDisplay(discord.ui.View):
-    def __init__(self, user_id):
+    def __init__(self, user_id, discord_user):
         super().__init__(timeout=None)  
         self.user_id = user_id
+        self.discord_user = discord_user
 
     async def send_profile(self, interaction: discord.Interaction):
 
@@ -57,8 +58,6 @@ class ProfileDisplay(discord.ui.View):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             print("User Not Found")
-
-
 
 @bot.event
 async def on_ready():
@@ -97,7 +96,7 @@ user_voice_time = {}
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    voice_channel = bot.get_channel(1292785692694544415)
+    voice_channel = bot.get_channel(1227525715701006356)
     
     # User joins a voice channel
     if before.channel is None and after.channel is not None:
@@ -131,7 +130,7 @@ async def on_voice_state_update(member, before, after):
                 user.gacha_roll += 1
                 user.save()
 
-                print(f"{member.name} has spent {i * 2} hours in the voice channel and now has {user_voice_time[member.id]['gacha']} gacha points.")
+                print(f"{member.name} has spent {i * 2} hours in the voice channel and now has {user.gacha_roll} gacha points.")
 
             # Reset join time for next session
             user_voice_time[member.id]["join_time"] = None
@@ -142,4 +141,5 @@ async def on_disconnect():
     user_voice_time.clear()
 
 
-bot.run(BOT_TOKEN)
+if __name__ == '__main__':
+    bot.run(BOT_TOKEN)
