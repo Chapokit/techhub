@@ -38,13 +38,14 @@ class ShowProfile(discord.ui.View):
         @discord.ui.button(label="Show Profile 📝", style=discord.ButtonStyle.primary, row=0)
         async def show_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
             # Create an instance of the ProfileDisplay class and call its display_profile method
-            profile_display = ProfileDisplay(user_id=interaction.user.id)
+            profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
             await profile_display.send_profile(interaction)
 
 class ProfileDisplay(discord.ui.View):
-    def __init__(self, user_id):
+    def __init__(self, user_id, discord_user):
         super().__init__(timeout=None)  
         self.user_id = user_id
+        self.discord_user = discord_user
 
     async def send_profile(self, interaction: discord.Interaction):
 
