@@ -48,8 +48,7 @@ class ProfileDisplay(discord.ui.View):
 
     async def send_profile(self, interaction: discord.Interaction):
 
-        # user = User.objects(discord_id=str(self.user_id)).first()
-        user = None
+        user = User.objects(discord_id=str(self.user_id)).first()
         if user:
             embed = discord.Embed(title=""
                                   ,description=""
@@ -102,9 +101,9 @@ async def on_voice_state_update(member, before, after):
     
     # User joins a voice channel
     if before.channel is None and after.channel is not None:
-        # Log the join time and total accumulated time
+        # Log the join time, total accumulated time, and initialize gacha count
         if member.id not in user_voice_time:
-            user_voice_time[member.id] = {"join_time": datetime.now(), "total_time": timedelta(0)}
+            user_voice_time[member.id] = {"join_time": datetime.now(), "total_time": timedelta(0), "gacha": 0}
         else:
             user_voice_time[member.id]["join_time"] = datetime.now()
         
@@ -122,17 +121,25 @@ async def on_voice_state_update(member, before, after):
             total_hours = user_voice_time[member.id]["total_time"].total_seconds() / 3600
             print(f"{member.name} has spent {total_hours:.2f} hours in the voice channel.")
 
-            # Check how many complete 2-hour intervals have passed and notify accordingly
-            intervals = int(total_hours // 2)  
+            # Check how many complete 2-hour intervals have passed and increment the "gacha" variable
+            intervals = int(total_hours // 2)
             for i in range(1, intervals + 1):
-                print(f"{member.name} has spent {i * 2} hours in the voice channel.")
-                
+                user_voice_time[member.id]["gacha"] += 1
 
+                # Increment the gacha_roll for the user
+                user = User.objects(discord_id=member.id).first()
+                user.gacha_roll += 1
+                user.save()
+
+                print(f"{member.name} has spent {i * 2} hours in the voice channel and now has {user_voice_time[member.id]['gacha']} gacha points.")
+
+            # Reset join time for next session
             user_voice_time[member.id]["join_time"] = None
 
 @bot.event
 async def on_disconnect():
     # Clear tracking data on bot disconnect
     user_voice_time.clear()
+
 
 bot.run(BOT_TOKEN)
