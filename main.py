@@ -59,8 +59,6 @@ class ProfileDisplay(discord.ui.View):
         else:
             print("User Not Found")
 
-
-
 @bot.event
 async def on_ready():
     print(f'Logged on as {bot.user}!')
@@ -98,7 +96,7 @@ user_voice_time = {}
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    voice_channel = bot.get_channel(1292785692694544415)
+    voice_channel = bot.get_channel(1227525715701006356)
     
     # User joins a voice channel
     if before.channel is None and after.channel is not None:
@@ -143,4 +141,5 @@ async def on_disconnect():
     user_voice_time.clear()
 
 
-bot.run(BOT_TOKEN)
+if __name__ == '__main__':
+    bot.run(BOT_TOKEN)
