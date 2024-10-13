@@ -142,4 +142,5 @@ async def on_disconnect():
 
 
 if __name__ == '__main__':
-    bot.run(BOT_TOKEN)
+    # bot.run(BOT_TOKEN)
+    create_user()

@@ -17,3 +17,13 @@ def roll_gacha(user_id):
 
     result = random.randint(1,10000)
     if result == 1:
+        pass
+
+def create_user():
+    
+    user = User(
+        discord_id = "999",
+        user_name = "Munyin"
+    )
+    user.save()
+
