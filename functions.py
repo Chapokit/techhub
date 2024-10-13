@@ -11,3 +11,9 @@ from pymongo.server_api import ServerApi
 
 from classes import *
 
+def roll_gacha(user_id):
+
+    user = User.objects(discord_id=user_id).first()
+
+    result = random.randint(1,10000)
+    if result == 1:
