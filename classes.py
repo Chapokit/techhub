@@ -15,3 +15,10 @@ class User(Document):
     # 2. Progession Data
     level = fields.IntField(default=1)
     exp = fields.IntField(default=0)
+
+    # 3. Inventory
+
+
+    # 4.Gacha Roll
+    roll_left = fields.IntField(default=0)
+    roll_count = fields.IntField(default=0)
