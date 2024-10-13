@@ -131,7 +131,7 @@ async def on_voice_state_update(member, before, after):
                 user.gacha_roll += 1
                 user.save()
 
-                print(f"{member.name} has spent {i * 2} hours in the voice channel and now has {user_voice_time[member.id]['gacha']} gacha points.")
+                print(f"{member.name} has spent {i * 2} hours in the voice channel and now has {user.gacha_roll} gacha points.")
 
             # Reset join time for next session
             user_voice_time[member.id]["join_time"] = None
