@@ -116,57 +116,60 @@ async def on_voice_state_update(member, before, after):
     # User joins a voice channel
     if before.channel is None and after.channel is not None:
         if member.id not in user_voice_time:
+            # Store join time, total time and gacha points
             user_voice_time[member.id] = {"join_time": datetime.now(), "total_time": timedelta(0), "gacha": 0}
         else:
             user_voice_time[member.id]["join_time"] = datetime.now()
         
         print(f"{member.name} joined voice channel {after.channel.name} at {user_voice_time[member.id]['join_time']}")
+        print(user_voice_time)
     
     # User leaves the voice channel
     elif before.channel is not None and after.channel is None:
         join_time = user_voice_time[member.id].get("join_time")
         
         if join_time is not None:
+            # Calculate time spent in voice channel and add to total time
             time_spent = datetime.now() - join_time
             user_voice_time[member.id]["total_time"] += time_spent
 
             total_minutes = user_voice_time[member.id]["total_time"].total_seconds() / 60
             print(f"{member.name} has spent {total_minutes:.2f} minutes in the voice channel.")
 
-            # Reset join time for next session
+            # Reset join time since the user has left
             user_voice_time[member.id]["join_time"] = None
     
-    # Start the background task if a user joins a voice channel
+    # Start the background task if not already running
     if not hasattr(bot, 'gacha_task'):
         bot.gacha_task = bot.loop.create_task(track_gacha_points())
 
 async def track_gacha_points():
+    print("Working")
     while True:
         await asyncio.sleep(INTERVAL_MINUTES * 60)  # Wait for the defined interval
-        
+        print(user_voice_time.items())
         for member_id, data in list(user_voice_time.items()):
             join_time = data.get("join_time")
             if join_time:
-                # Calculate the time spent in the current session
+                # Calculate time spent in the current session
                 time_spent = datetime.now() - join_time
-                total_minutes = (data["total_time"] + time_spent).total_seconds() / 60
+                total_minutes = time_spent.total_seconds() / 60
 
-                # Calculate how many complete intervals have passed
-                intervals = int(total_minutes // INTERVAL_MINUTES)
-
-                # Increment the gacha count based on passed intervals
-                previous_gacha = data["gacha"]
-                new_gacha = intervals
-
-                if new_gacha > previous_gacha:
-                    increment = new_gacha - previous_gacha
-                    data["gacha"] = new_gacha
+                # If the user has spent at least the INTERVAL_MINUTES in the channel, award gacha points
+                if total_minutes >= INTERVAL_MINUTES:
+                    # Increment gacha by 1 for each interval passed
+                    data["gacha"] += 1
                     
+                    # Reset join time to the current time to start a new interval
+                    data["join_time"] = datetime.now()
+
+                    # Update the user's gacha rolls in MongoDB
                     user = User.objects(discord_id=member_id).first()
-                    user.roll_count += increment
+                    user.roll_count += 1  # Increment by 1 for each minute/interval
                     user.save()
 
-                    print(f"{user.username} earned {increment} gacha points for being in the voice channel. Now has {user.gacha_roll} gacha points.")
+                    print(f"{user.username} earned 1 gacha point. Now has {user.roll_count} gacha points.")
+
 
 @bot.command(name="create_users")
 @commands.has_permissions(administrator=True)  # Only allow administrators to use this command
