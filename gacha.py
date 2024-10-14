@@ -40,7 +40,10 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="Check Gacha rate", style=discord.ButtonStyle.primary, row=0)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
 
-        check_rate()
+        embed = discord.Embed(
+                            title="*****GACHA**RATE******",
+                            description=f"**User Name:** {check_rate(user_id=interaction.user.id)} %",
+                            color=discord.Color.darker_gray())
 
 class GachaResult(discord.ui.View):
     def __init__(self, user_id, discord_user):
