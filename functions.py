@@ -14,15 +14,12 @@ from classes import *
 
 def roll_gacha(user_id):
 
-    user = User.objects(discord_id=user_id).first()
+    user = User.objects(discord_id=str(user_id)).first()
 
     base_rate = 10000
+    scaling_factor = 0.5
 
-    def calculate_rate(level):
-        scaling_factor = 0.5
-        return base_rate / (1 + (level - 1) * scaling_factor)
-
-    rate = calculate_rate(user.level)
+    rate = base_rate / (1 + (user.level - 1) * scaling_factor)
     
     result = random.randint(1, int(rate))
     
@@ -43,7 +40,7 @@ def roll_gacha(user_id):
     
 def check_rate(user_id):
 
-    user = User.objects(discord_id=user_id).first()
+    user = User.objects(discord_id=str(user_id)).first()
 
     base_rate = 10000
 
