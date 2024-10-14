@@ -13,7 +13,7 @@ from pymongo.server_api import ServerApi
 
 from classes import *
 from functions import *
-from create_user import *
+from gacha import *
 
 load_dotenv()
 
@@ -58,12 +58,13 @@ class ProfileDisplay(discord.ui.View):
 
         user = User.objects(discord_id=str(self.user_id)).first()
         if user:
-            embed = discord.Embed(title="User Profile",
-                                  description=f"**User Name:** {user.user_name}\n"
-                                    f"**Level:** {user.level}\n"
-                                    f"**Exp:** {user.exp}\n"
+            embed = discord.Embed(
+                                title="User Profile",
+                                description=f"**User Name:** {user.user_name}\n"
+                                            f"**Level:** {user.level}\n"
+                                            f"**Exp:** {user.exp}\n",
+                                color=discord.Color.darker_gray())
 
-                                  ,color=discord.Color.darker_gray)
             embed.set_thumbnail(url=self.discord_user.avatar.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
@@ -168,6 +169,7 @@ async def track_gacha_points():
                     print(f"{user.username} earned {increment} gacha points for being in the voice channel. Now has {user.gacha_roll} gacha points.")
 
 @bot.command(name="create_users")
+@commands.has_permissions(administrator=True)  # Only allow administrators to use this command
 async def create_users(ctx):
     guild = ctx.guild  # Get the server (guild) where the command is executed
     

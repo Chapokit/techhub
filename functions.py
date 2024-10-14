@@ -18,7 +18,19 @@ def roll_gacha(user_id):
 
     result = random.randint(1,10000)
     if result == 1:
-        pass
+        user.fragment[0] += 1
+        user.save()
+        return "fragment_1"
+    elif result == 2:
+        user.fragment[0] += 1
+        user.save()
+        return "fragment_2"
+    elif result == 3:
+        user.fragment[0] += 1
+        user.save()
+        return "fragment_2"
+    else:
+        return "Nothing"
 
 def create_user():
     
@@ -27,5 +39,6 @@ def create_user():
         user_name = "Munyin"
     )
     user.save()
+
 
 
