@@ -16,7 +16,16 @@ def roll_gacha(user_id):
 
     user = User.objects(discord_id=user_id).first()
 
-    result = random.randint(1,10000)
+    base_rate = 10000
+
+    def calculate_rate(level):
+        scaling_factor = 0.005
+        return base_rate / (1 + level * scaling_factor)
+
+    rate = calculate_rate(user.level)
+    
+    result = random.randint(1, int(rate))
+    
     if result == 1:
         user.fragment[0] += 1
         user.save()
