@@ -31,11 +31,23 @@ def roll_gacha(user_id):
         return "fragment_2"
     else:
         return "Nothing"
+    
+def level_up(user_id):
+
+    user = User.objects(discord_id=user_id).first()
+
+    base_exp = 100
+    multiplier = 1.1
+    exp_needed = base_exp * (multiplier)**user.level
+    if user.exp >= exp_needed:
+        user.exp -= exp_needed
+        user.level += 1
+    
 
 def create_user():
     
     user = User(
-        discord_id = "999",
+        discord_id = "888",
         user_name = "Munyin"
     )
     user.save()
