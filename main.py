@@ -13,6 +13,7 @@ from pymongo.server_api import ServerApi
 
 from classes import *
 from functions import *
+from create_user import *
 
 load_dotenv()
 
@@ -35,11 +36,17 @@ class ShowProfile(discord.ui.View):
     def __init__(self):
         super().__init__()
 
-        @discord.ui.button(label="Show Profile 📝", style=discord.ButtonStyle.primary, row=0)
-        async def show_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
-            # Create an instance of the ProfileDisplay class and call its display_profile method
-            profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
-            await profile_display.send_profile(interaction)
+    @discord.ui.button(label="Show Profile 📝", style=discord.ButtonStyle.primary, row=0)
+    async def show_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Create an instance of the ProfileDisplay class and call its display_profile method
+        profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
+        await profile_display.send_profile(interaction)
+
+    @discord.ui.button(label="Create Profile 📝", style=discord.ButtonStyle.primary, row=0)
+    async def create_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Create an instance of the ProfileDisplay class and call its display_profile method
+        profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
+        await profile_display.send_profile(interaction)
 
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
@@ -51,18 +58,22 @@ class ProfileDisplay(discord.ui.View):
 
         user = User.objects(discord_id=str(self.user_id)).first()
         if user:
-            embed = discord.Embed(title=""
-                                  ,description=""
+            embed = discord.Embed(title="User Profile",
+                                  description=f"**User Name:** {user.user_name}\n"
+                                    f"**Level:** {user.level}\n"
+                                    f"**Exp:** {user.exp}\n"
+
                                   ,color=discord.Color.darker_gray)
             embed.set_thumbnail(url=self.discord_user.avatar.url)
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             print("User Not Found")
 
+
 @bot.event
 async def on_ready():
     print(f'Logged on as {bot.user}!')
-    channel_id = 1292785692694544415
+    channel_id = 1047103852131930142
     channel = bot.get_channel(channel_id)
 
     if channel is not None:
@@ -78,29 +89,31 @@ async def on_ready():
                 image_file = discord.File(file, os.path.basename(image_path))
                 embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
                 
-                await channel.send(embed=embed, file=image_file)
-                await channel.send(view=ShowProfile())
+                await channel.send(embed=embed, file=image_file, view=ShowProfile())
         else:
             embed = discord.Embed(
                 title="Techhub's Mainmenu", 
                 description="Select an option to proceed."
             )
         
-            await channel.send(embed=embed)
-            await channel.send(view=ShowProfile())
+            await channel.send(embed=embed, view=ShowProfile())
+
     else:
         print(f"Channel with ID {channel_id} not found.")
+
 
 # Dictionary to store user join times
 user_voice_time = {}
 
+# Variable to configure the time interval (in minutes)
+INTERVAL_MINUTES = 1  # Can be changed as needed
+
 @bot.event
 async def on_voice_state_update(member, before, after):
     voice_channel = bot.get_channel(1227525715701006356)
-    
+
     # User joins a voice channel
     if before.channel is None and after.channel is not None:
-        # Log the join time, total accumulated time, and initialize gacha count
         if member.id not in user_voice_time:
             user_voice_time[member.id] = {"join_time": datetime.now(), "total_time": timedelta(0), "gacha": 0}
         else:
@@ -110,37 +123,70 @@ async def on_voice_state_update(member, before, after):
     
     # User leaves the voice channel
     elif before.channel is not None and after.channel is None:
-        # Calculate the time spent in the voice channel during this session
         join_time = user_voice_time[member.id].get("join_time")
         
         if join_time is not None:
             time_spent = datetime.now() - join_time
-            user_voice_time[member.id]["total_time"] += time_spent  # Add to total time
+            user_voice_time[member.id]["total_time"] += time_spent
 
-            total_hours = user_voice_time[member.id]["total_time"].total_seconds() / 3600
-            print(f"{member.name} has spent {total_hours:.2f} hours in the voice channel.")
-
-            # Check how many complete 2-hour intervals have passed and increment the "gacha" variable
-            intervals = int(total_hours // 2)
-            for i in range(1, intervals + 1):
-                user_voice_time[member.id]["gacha"] += 1
-
-                # Increment the gacha_roll for the user
-                user = User.objects(discord_id=member.id).first()
-                user.gacha_roll += 1
-                user.save()
-
-                print(f"{member.name} has spent {i * 2} hours in the voice channel and now has {user.gacha_roll} gacha points.")
+            total_minutes = user_voice_time[member.id]["total_time"].total_seconds() / 60
+            print(f"{member.name} has spent {total_minutes:.2f} minutes in the voice channel.")
 
             # Reset join time for next session
             user_voice_time[member.id]["join_time"] = None
+    
+    # Start the background task if a user joins a voice channel
+    if not hasattr(bot, 'gacha_task'):
+        bot.gacha_task = bot.loop.create_task(track_gacha_points())
 
-@bot.event
-async def on_disconnect():
-    # Clear tracking data on bot disconnect
-    user_voice_time.clear()
+async def track_gacha_points():
+    while True:
+        await asyncio.sleep(INTERVAL_MINUTES * 60)  # Wait for the defined interval
+        
+        for member_id, data in list(user_voice_time.items()):
+            join_time = data.get("join_time")
+            if join_time:
+                # Calculate the time spent in the current session
+                time_spent = datetime.now() - join_time
+                total_minutes = (data["total_time"] + time_spent).total_seconds() / 60
+
+                # Calculate how many complete intervals have passed
+                intervals = int(total_minutes // INTERVAL_MINUTES)
+
+                # Increment the gacha count based on passed intervals
+                previous_gacha = data["gacha"]
+                new_gacha = intervals
+
+                if new_gacha > previous_gacha:
+                    increment = new_gacha - previous_gacha
+                    data["gacha"] = new_gacha
+                    
+                    user = User.objects(discord_id=member_id).first()
+                    user.roll_count += increment
+                    user.save()
+
+                    print(f"{user.username} earned {increment} gacha points for being in the voice channel. Now has {user.gacha_roll} gacha points.")
+
+@bot.command(name="create_users")
+async def create_users(ctx):
+    guild = ctx.guild  # Get the server (guild) where the command is executed
+    
+    # Iterate over all members of the server
+    for member in guild.members:
+        # Check if the member already has a User object in the MongoDB
+        try:
+            User.objects.get(discord_id=str(member.id))
+            print(f"User {member.name} already exists.")
+        except DoesNotExist:
+            # If user doesn't exist, create a new User document
+            new_user = User(
+                discord_id=str(member.id),
+                user_name=member.name  # You can use `member.display_name` if you prefer the display name
+            )
+            new_user.save()
+            print(f"Created new user for {member.name}.")
+
+    await ctx.send("User creation process completed!")
 
 
-if __name__ == '__main__':
-    # bot.run(BOT_TOKEN)
-    create_user()
+bot.run(BOT_TOKEN)

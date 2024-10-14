@@ -19,5 +19,4 @@ class User(Document):
     fragment = fields.DictField(default=lambda: {"a": [0], "b": [0], "c": [0]})
 
     # 4. Gacha Roll
-    roll_left = fields.IntField(default=0)
     roll_count = fields.IntField(default=0)

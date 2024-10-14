@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from mongoengine import Document, fields, connect
+from mongoengine import DoesNotExist
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -26,4 +27,5 @@ def create_user():
         user_name = "Munyin"
     )
     user.save()
+
 
