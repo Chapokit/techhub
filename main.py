@@ -107,7 +107,7 @@ async def on_ready():
 user_voice_time = {}
 
 # Variable to configure the time interval (in minutes)
-INTERVAL_MINUTES = 0.3  # Can be changed as needed
+INTERVAL_MINUTES = 1  # Can be changed as needed
 
 @bot.event
 async def on_voice_state_update(member, before, after):
