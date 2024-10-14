@@ -42,11 +42,6 @@ class ShowProfile(discord.ui.View):
         profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
         await profile_display.send_profile(interaction)
 
-    @discord.ui.button(label="Create Profile 📝", style=discord.ButtonStyle.primary, row=0)
-    async def create_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Create an instance of the ProfileDisplay class and call its display_profile method
-        profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
-        await profile_display.send_profile(interaction)
 
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
@@ -70,6 +65,89 @@ class ProfileDisplay(discord.ui.View):
         else:
             print("User Not Found")
 
+
+# Dictionary to store user join times
+user_voice_time = {}
+
+INTERVAL_MINUTES = 0.5  # Adjust as necessary
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    # User joins a voice channel
+    if before.channel is None and after.channel is not None:
+        if member.id not in user_voice_time:
+            user_voice_time[member.id] = {"join_time": datetime.now(), "total_time": timedelta(0), "gacha": 0}
+        else:
+            user_voice_time[member.id]["join_time"] = datetime.now()
+
+        print(f"{member.name} joined voice channel {after.channel.name} at {user_voice_time[member.id]['join_time']}")
+    
+    # User leaves the voice channel
+    elif before.channel is not None and after.channel is None:
+        join_time = user_voice_time[member.id].get("join_time")
+        if join_time:
+            time_spent = datetime.now() - join_time
+            user_voice_time[member.id]["total_time"] += time_spent
+
+            total_minutes = user_voice_time[member.id]["total_time"].total_seconds() / 60
+            print(f"{member.name} has spent {total_minutes:.2f} minutes in the voice channel.")
+
+            user_voice_time[member.id]["join_time"] = None
+
+
+@tasks.loop(minutes=1.0)  # Run every x minute
+async def track_gacha_points():
+    print("Tracking gacha points...")
+    
+    for member_id, data in list(user_voice_time.items()):
+        join_time = data.get("join_time")
+        if join_time:
+            # Calculate time spent in the current session
+            time_spent = datetime.now() - join_time
+            total_minutes = time_spent.total_seconds() / 60
+            
+            print(f"Member {member_id} total minutes: {total_minutes}")
+
+            if total_minutes >= INTERVAL_MINUTES:
+                # Find the user in MongoDB
+                user = User.objects(discord_id=str(member_id)).first()
+                
+                if user:
+                    # Increment gacha roll count and save
+                    user.roll_count += 1
+                    user.save()
+
+                    # Increment local gacha counter
+                    data["gacha"] += 1
+
+                    # Reset join_time to now for the next interval
+                    data["join_time"] = datetime.now()
+
+                    print(f"{user.user_name} earned 1 gacha point. Now has {user.roll_count} gacha points.")
+                else:
+                    print(f"User with ID {member_id} not found in database.")
+
+@bot.command(name="create_users")
+@commands.has_permissions(administrator=True)  # Only allow administrators to use this command
+async def create_users(ctx):
+    guild = ctx.guild  # Get the server (guild) where the command is executed
+    
+    # Iterate over all members of the server
+    for member in guild.members:
+        # Check if the member already has a User object in the MongoDB
+        try:
+            User.objects.get(discord_id=str(member.id))
+            print(f"User {member.name} already exists.")
+        except DoesNotExist:
+            # If user doesn't exist, create a new User document
+            new_user = User(
+                discord_id=str(member.id),
+                user_name=member.name  # You can use `member.display_name` if you prefer the display name
+            )
+            new_user.save()
+            print(f"Created new user for {member.name}.")
+
+    await ctx.send("User creation process completed!")
 
 @bot.event
 async def on_ready():
@@ -98,100 +176,18 @@ async def on_ready():
             )
         
             await channel.send(embed=embed, view=ShowProfile())
+            if not track_gacha_points.is_running():
+                track_gacha_points.start()
 
     else:
         print(f"Channel with ID {channel_id} not found.")
 
+    gacha_id = 1293603902419243058
+    gacha_channel = bot.get_channel(gacha_id)
 
-# Dictionary to store user join times
-user_voice_time = {}
-
-# Variable to configure the time interval (in minutes)
-INTERVAL_MINUTES = 1  # Can be changed as needed
-
-@bot.event
-async def on_voice_state_update(member, before, after):
-    voice_channel = bot.get_channel(1227525715701006356)
-
-    # User joins a voice channel
-    if before.channel is None and after.channel is not None:
-        if member.id not in user_voice_time:
-            # Store join time, total time and gacha points
-            user_voice_time[member.id] = {"join_time": datetime.now(), "total_time": timedelta(0), "gacha": 0}
-        else:
-            user_voice_time[member.id]["join_time"] = datetime.now()
-        
-        print(f"{member.name} joined voice channel {after.channel.name} at {user_voice_time[member.id]['join_time']}")
-        print(user_voice_time)
-    
-    # User leaves the voice channel
-    elif before.channel is not None and after.channel is None:
-        join_time = user_voice_time[member.id].get("join_time")
-        
-        if join_time is not None:
-            # Calculate time spent in voice channel and add to total time
-            time_spent = datetime.now() - join_time
-            user_voice_time[member.id]["total_time"] += time_spent
-
-            total_minutes = user_voice_time[member.id]["total_time"].total_seconds() / 60
-            print(f"{member.name} has spent {total_minutes:.2f} minutes in the voice channel.")
-
-            # Reset join time since the user has left
-            user_voice_time[member.id]["join_time"] = None
-    
-    # Start the background task if not already running
-    if not hasattr(bot, 'gacha_task'):
-        bot.gacha_task = bot.loop.create_task(track_gacha_points())
-
-async def track_gacha_points():
-    print("Working")
-    while True:
-        await asyncio.sleep(INTERVAL_MINUTES * 60)  # Wait for the defined interval
-        print(user_voice_time.items())
-        for member_id, data in list(user_voice_time.items()):
-            join_time = data.get("join_time")
-            if join_time:
-                # Calculate time spent in the current session
-                time_spent = datetime.now() - join_time
-                total_minutes = time_spent.total_seconds() / 60
-
-                # If the user has spent at least the INTERVAL_MINUTES in the channel, award gacha points
-                if total_minutes >= INTERVAL_MINUTES:
-                    # Increment gacha by 1 for each interval passed
-                    data["gacha"] += 1
-                    
-                    # Reset join time to the current time to start a new interval
-                    data["join_time"] = datetime.now()
-
-                    # Update the user's gacha rolls in MongoDB
-                    user = User.objects(discord_id=member_id).first()
-                    user.roll_count += 1  # Increment by 1 for each minute/interval
-                    user.save()
-
-                    print(f"{user.username} earned 1 gacha point. Now has {user.roll_count} gacha points.")
-
-
-@bot.command(name="create_users")
-@commands.has_permissions(administrator=True)  # Only allow administrators to use this command
-async def create_users(ctx):
-    guild = ctx.guild  # Get the server (guild) where the command is executed
-    
-    # Iterate over all members of the server
-    for member in guild.members:
-        # Check if the member already has a User object in the MongoDB
-        try:
-            User.objects.get(discord_id=str(member.id))
-            print(f"User {member.name} already exists.")
-        except DoesNotExist:
-            # If user doesn't exist, create a new User document
-            new_user = User(
-                discord_id=str(member.id),
-                user_name=member.name  # You can use `member.display_name` if you prefer the display name
+    embed = discord.Embed(
+                title="Techhub's Gacha"
             )
-            new_user.save()
-            print(f"Created new user for {member.name}.")
-
-    await ctx.send("User creation process completed!")
-
+    await gacha_channel.send(embed=embed, view=GachaView())
 
 bot.run(BOT_TOKEN)
