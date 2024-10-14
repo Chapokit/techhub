@@ -28,7 +28,7 @@ def roll_gacha(user_id):
     elif result == 3:
         user.fragment[0] += 1
         user.save()
-        return "fragment_2"
+        return "fragment_3"
     else:
         return "Nothing"
     
