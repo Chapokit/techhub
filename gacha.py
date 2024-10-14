@@ -30,13 +30,15 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="Roll Gacha x1", style=discord.ButtonStyle.primary, row=0)
     async def one_roll(self, interaction: discord.Interaction, button: discord.ui.Button):
         gacha_result = GachaResult(user_id=interaction.user.id, discord_user=interaction.user)
-        await interaction.response.send_message("You got : ")
+        await interaction.response.defer()  # Defer the response while we process
+        await interaction.followup.send("You got: ")  # Send the initial message
         await gacha_result.display_result(interaction)
 
     @discord.ui.button(label="Roll Gacha x10", style=discord.ButtonStyle.primary, row=0)
     async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
         gacha_result = GachaResult(user_id=interaction.user.id, discord_user=interaction.user)
-        await interaction.response.send_message("You got : ")
+        await interaction.response.defer()  # Defer the response while we process
+        await interaction.followup.send("You got: ")  # Send the initial message
         for _ in range(10):
             await gacha_result.display_result(interaction)
 
@@ -60,4 +62,4 @@ class GachaResult(discord.ui.View):
 
     async def display_result(self, interaction: discord.Interaction):
         result = roll_gacha(self.user_id)
-        await interaction.followup.send(result)
+        await interaction.followup.send(result)  # Send the actual result after processing
