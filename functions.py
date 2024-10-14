@@ -19,8 +19,8 @@ def roll_gacha(user_id):
     base_rate = 10000
 
     def calculate_rate(level):
-        scaling_factor = 0.005
-        return base_rate / (1 + level * scaling_factor)
+        scaling_factor = 0.5
+        return base_rate / (1 + (level - 1) * scaling_factor)
 
     rate = calculate_rate(user.level)
     
@@ -40,6 +40,20 @@ def roll_gacha(user_id):
         return "fragment_3"
     else:
         return "Nothing"
+    
+def check_rate(user_id):
+
+    user = User.objects(discord_id=user_id).first()
+
+    base_rate = 10000
+
+    def calculate_rate(level):
+        scaling_factor = 0.5
+        return base_rate / (1 + (level - 1) * scaling_factor)
+
+    rate = calculate_rate(user.level)
+
+    return 1 / rate * 100
     
 def level_up(user_id):
 

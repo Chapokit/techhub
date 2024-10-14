@@ -35,7 +35,12 @@ class GachaView(discord.ui.View):
 
     @discord.ui.button(label="Roll Gacha x10", style=discord.ButtonStyle.primary, row=0)
     async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
-        pass   
+        pass
+
+    @discord.ui.button(label="Check Gacha rate", style=discord.ButtonStyle.primary, row=0)
+    async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        check_rate()
 
 class GachaResult(discord.ui.View):
     def __init__(self, user_id, discord_user):
