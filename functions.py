@@ -42,7 +42,7 @@ def level_up(user_id):
     if user.exp >= exp_needed:
         user.exp -= exp_needed
         user.level += 1
-    
+    user.save()
 
 def create_user():
     
