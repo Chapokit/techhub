@@ -27,20 +27,49 @@ class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__()
 
+    async def countdown(self, interaction):
+        # Send a message indicating the countdown
+        countdown_message = await interaction.followup.send("Rolling in 3...", ephemeral=True)
+        await asyncio.sleep(1)
+        await interaction.followup.send("Rolling in 2...", ephemeral=True)
+        await asyncio.sleep(1)
+        await interaction.followup.send("Rolling in 1...", ephemeral=True)
+        await asyncio.sleep(1)
+
+        # Now we can roll the gacha
+        await interaction.followup.send("Rolling...", ephemeral=True)
+
+    async def send_gacha_results(self, interaction, results):
+        embed = discord.Embed(title="Gacha Results", description="You got:")
+        for result in results:
+            embed.add_field(name=result, value=" ", inline=False)
+
+        # Send the embed message
+        gacha_message = await interaction.followup.send(embed=embed, ephemeral=True)
+
+        # Wait for 60 seconds before deleting the message
+        await asyncio.sleep(60)
+        await gacha_message.delete()
+
     @discord.ui.button(label="Roll Gacha x1", style=discord.ButtonStyle.primary, row=0)
     async def one_roll(self, interaction: discord.Interaction, button: discord.ui.Button):
-        gacha_result = GachaResult(user_id=interaction.user.id, discord_user=interaction.user)
-        await interaction.response.defer()  # Defer the response while we process
-        await interaction.followup.send("You got: ", ephemeral = True)  # Send the initial message
-        await gacha_result.display_result(interaction)
+        await interaction.response.defer()
+        await self.countdown(interaction)
+
+        result = roll_gacha(interaction.user.id)  # Call the gacha function
+        await self.send_gacha_results(interaction, [result])
 
     @discord.ui.button(label="Roll Gacha x10", style=discord.ButtonStyle.primary, row=0)
     async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
-        gacha_result = GachaResult(user_id=interaction.user.id, discord_user=interaction.user)
-        await interaction.response.defer()  # Defer the response while we process
-        await interaction.followup.send("You got: ", ephemeral = True)  # Send the initial message
+        await interaction.response.defer()
+        await self.countdown(interaction)
+
+        results = []
         for _ in range(10):
-            await gacha_result.display_result(interaction)
+            result = roll_gacha(interaction.user.id)  # Call the gacha function
+            results.append(result)
+
+        await self.send_gacha_results(interaction, results)
 
     @discord.ui.button(label="Check Gacha Rate", style=discord.ButtonStyle.primary, row=0)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
