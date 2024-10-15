@@ -41,6 +41,10 @@ class ShowProfile(discord.ui.View):
         # Create an instance of the ProfileDisplay class and call its display_profile method
         profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
         await profile_display.send_profile(interaction)
+    
+    @discord.ui.button(label="Show Inventory 📦", style=discord.ButtonStyle.primary, row=0)
+    async def show_inventory(self, interaction: discord.Interaction, button: discord.ui.Button):
+        pass
 
 
 class ProfileDisplay(discord.ui.View):
