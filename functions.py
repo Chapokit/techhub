@@ -24,17 +24,19 @@ def roll_gacha(user_id):
     result = random.randint(1, int(rate))
     
     if result == 1:
-        user.fragment[0] += 1
-        user.save()
-        return "fragment_1"
-    elif result == 2:
-        user.fragment[0] += 1
-        user.save()
-        return "fragment_2"
-    elif result == 3:
-        user.fragment[0] += 1
-        user.save()
-        return "fragment_3"
+        frament_number = random.randint(1,3)
+        if frament_number == 1:
+            user.fragment[0] += 1
+            user.save()
+            return "fragment_1"
+        elif frament_number == 2:
+            user.fragment[0] += 1
+            user.save()
+            return "fragment_2"
+        elif frament_number == 3:
+            user.fragment[0] += 1
+            user.save()
+            return "fragment_3"
     else:
         return "Nothing"
     
