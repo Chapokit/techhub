@@ -41,29 +41,7 @@ class ShowProfile(discord.ui.View):
         # Create an instance of the ProfileDisplay class and call its display_profile method
         profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
         await profile_display.send_profile(interaction)
-
-    @bot.command(name="leaderboard")
-    async def leaderboard(ctx):
-        top_users = User.objects().order_by('-level', '-exp')[:10]
         
-        if not top_users:
-            return
-
-        embed = discord.Embed(
-            title="Leaderboard - Top 10 Users by Level",
-            color=discord.Color.gold()
-        )
-
-        for index, user in enumerate(top_users, 1):
-            embed.add_field(
-                name=f"#{index} - {user.user_name}",
-                value=f"Level: {user.level}, EXP: {user.exp}",
-                inline=False
-            )
-
-        await ctx.send(embed=embed)
-
-
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
         super().__init__(timeout=None)  
