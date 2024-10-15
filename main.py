@@ -4,6 +4,8 @@ from discord.ext import tasks, commands
 from discord.ui import View, Button, Modal, TextInput, Select
 import asyncio
 
+from leader_board import*
+
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
@@ -41,18 +43,11 @@ class ShowProfile(discord.ui.View):
         # Create an instance of the ProfileDisplay class and call its display_profile method
         profile_display = ProfileDisplay(user_id=interaction.user.id, discord_user=interaction.user)
         await profile_display.send_profile(interaction)
-<<<<<<< HEAD
-=======
     
     @discord.ui.button(label="Show Inventory 📦", style=discord.ButtonStyle.primary, row=0)
     async def show_inventory(self, interaction: discord.Interaction, button: discord.ui.Button):
         pass
 
-    @bot.command(name="leaderboard")
-    async def leaderboard(ctx):
-        top_users = User.objects().order_by('-level', '-exp')[:10]
->>>>>>> bd376328a434be1ece848118e79ed159c2992587
-        
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
         super().__init__(timeout=None)  
@@ -199,5 +194,12 @@ async def on_ready():
                 title="Techhub's Gacha"
             )
     await gacha_channel.send(embed=embed, view=GachaView())
+
+    leaderboard_channel_id = 927912771511791637
+    leaderboard = Leaderboard(bot, leaderboard_channel_id)
+    
+
+    leaderboard.start_leaderboard_updates.start()
+
 
 bot.run(BOT_TOKEN)
