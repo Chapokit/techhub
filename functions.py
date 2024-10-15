@@ -10,19 +10,31 @@ import pprint
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
+
 from classes import *
 
 def roll_gacha(user_id):
-
     user = User.objects(discord_id=str(user_id)).first()
+
+    # Get the user's level directly
+    effective_level = user.level
+
+    # Cap the effective level to a maximum value to prevent extreme scaling
+    max_level = 100  # Set a reasonable maximum level
+    effective_level = min(effective_level, max_level)
 
     base_rate = 1000
     scaling_factor = 1
 
-    rate = base_rate / (1 + (user.level - 1) * scaling_factor)
-    
+    # Calculate the rate based on the effective level
+    rate = base_rate / (1 + (effective_level - 1) * scaling_factor)
+
+    # Ensure the rate is not less than 1 to avoid invalid random range
+    rate = max(rate, 1)
+
+    # Use max(1, int(rate)) to avoid empty range
     result = random.randint(1, int(rate))
-    
+
     if result == 1:
         fragment_number = random.randint(1, 3)
         user.fragment[f"fragment{fragment_number}"] += 1
