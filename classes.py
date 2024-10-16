@@ -17,6 +17,8 @@ class User(Document):
 
     # 3. Inventory (Dictionary field)
     fragment = fields.DictField(default=lambda: {"fragment1": 0, "fragment2": 0, "fragment3": 0})
+    inventory = fields.ListField(fields.StringField(), default=list)
 
     # 4. Gacha Roll
     roll_count = fields.IntField(default=0)
+    roll_all_time = fields.IntField(default=0)

@@ -34,7 +34,7 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix=".", intents=discord.Intents.all())
 
-class ShowProfile(discord.ui.View):
+class ShowMenu(discord.ui.View):
     def __init__(self):
         super().__init__()
 
@@ -46,7 +46,34 @@ class ShowProfile(discord.ui.View):
     
     @discord.ui.button(label="Show Inventory 📦", style=discord.ButtonStyle.primary, row=0)
     async def show_inventory(self, interaction: discord.Interaction, button: discord.ui.Button):
-        pass
+        user = User.objects(discord_id=str(interaction.user.id)).first()  # Retrieve the user from the database
+
+        if user:
+            # Create an embed to display the user's inventory
+            embed = discord.Embed(title=f"{user.user_name}'s Inventory", color=discord.Color.blue())
+            embed.add_field(name="Level", value=user.level, inline=True)
+            embed.add_field(name="Experience", value=user.exp, inline=True)
+            embed.add_field(name="Fragments", value=f"Fragment 1: {user.fragment['fragment1']}\n"
+                                                    f"Fragment 2: {user.fragment['fragment2']}\n"
+                                                    f"Fragment 3: {user.fragment['fragment3']}", inline=False)
+
+            # Add inventory to the embed
+            if user.inventory:
+                inventory_str = "\n".join(user.inventory)  # Join all inventory items as a string
+            else:
+                inventory_str = "No items in inventory."
+
+            embed.add_field(name="Inventory", value=inventory_str, inline=False)
+
+            await interaction.response.send_message(embed=embed, ephemeral=True)  # Send the embed message
+        else:
+            await interaction.response.send_message("User not found.", ephemeral=True)
+
+    
+    @discord.ui.button(label="Search Profile by ID/Name 🔎", style=discord.ButtonStyle.primary, row=1)
+    async def search_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Create and show the modal for searching by ID or name
+        await interaction.response.send_modal(SearchProfileModal())
 
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
@@ -69,6 +96,39 @@ class ProfileDisplay(discord.ui.View):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             print("User Not Found")
+
+class SearchProfileModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Search User Profile", custom_id="search_profile_modal")
+
+        self.search_query = discord.ui.TextInput(
+            label="Enter Discord ID or Name",
+            placeholder="Search by ID or name",
+            required=True
+        )
+        self.add_item(self.search_query)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        query = self.search_query.value
+        # Search for user by discord_id or user_name
+        user = User.objects(discord_id=query).first() or User.objects(user_name=query).first()
+
+        if user:
+            embed = discord.Embed(
+                title=f"Profile: {user.user_name}",
+                # description=user.user_description,
+                color=discord.Color.green()
+            )
+            # embed.add_field(name="Rank", value=user.rank)
+            embed.add_field(name="Level", value=user.level)
+            embed.add_field(name="Exp", value=user.exp)
+            # embed.add_field(name="Major Badges", value=", ".join([badge.name for badge in user.major_badges]))
+            # embed.add_field(name="Minor Badges", value=", ".join([badge.name for badge in user.minor_badges]))
+            # embed.add_field(name="Projects", value=", ".join([project.name for project in user.projects]) or "No projects yet")
+
+            await interaction.response.send_message(embed=embed)
+        else:
+            await interaction.response.send_message("User not found. Please try again.", ephemeral=True)
 
 
 # Dictionary to store user join times
@@ -132,6 +192,27 @@ async def track_gacha_points():
                 else:
                     print(f"User with ID {member_id} not found in database.")
 
+@bot.event
+async def on_member_join(member):
+    # Check if the user already exists in the database
+    try:
+        User.objects.get(discord_id=str(member.id))
+        print(f"User {member.name} already exists.")
+    except DoesNotExist:
+        # If the user does not exist, create a new User document
+        new_user = User(
+            discord_id=str(member.id),
+            user_name=member.name  # Or use member.display_name for display names
+        )
+        new_user.save()
+        print(f"Created new user for {member.name}.")
+
+    # You can send a welcome message if you want
+    channel = member.guild.system_channel  # Or specify a different channel
+    if channel is not None:
+        await channel.send(f"Welcome {member.mention}! Your user profile has been created.")
+
+
 @bot.command(name="create_users")
 @commands.has_permissions(administrator=True)  # Only allow administrators to use this command
 async def create_users(ctx):
@@ -157,11 +238,11 @@ async def create_users(ctx):
 @bot.event
 async def on_ready():
     print(f'Logged on as {bot.user}!')
-    channel_id = 1047103852131930142
+    channel_id = 1295940243610144808
     channel = bot.get_channel(channel_id)
 
     if channel is not None:
-        image_path = 'path_to_image.png'
+        image_path = 'picture/grey.png'
         
         if os.path.isfile(image_path):
             embed = discord.Embed(
@@ -173,32 +254,41 @@ async def on_ready():
                 image_file = discord.File(file, os.path.basename(image_path))
                 embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
                 
-                await channel.send(embed=embed, file=image_file, view=ShowProfile())
+                await channel.send(embed=embed, file=image_file, view=ShowMenu())
         else:
             embed = discord.Embed(
                 title="Techhub's Mainmenu", 
                 description="Select an option to proceed."
             )
         
-            await channel.send(embed=embed, view=ShowProfile())
+            await channel.send(embed=embed, view=ShowMenu())
             if not track_gacha_points.is_running():
                 track_gacha_points.start()
 
     else:
         print(f"Channel with ID {channel_id} not found.")
 
-    gacha_id = 1293603902419243058
+    gacha_id = 1295940160415862865
     gacha_channel = bot.get_channel(gacha_id)
 
     embed = discord.Embed(
                 title="Techhub's Gacha"
             )
-    await gacha_channel.send(embed=embed, view=GachaView())
+    
+        # Open the image file in binary read mode
+    image_path = 'picture/grey.png'
+    with open(image_path, 'rb') as file:
+        image_file = discord.File(file, os.path.basename(image_path))
 
-    leaderboard_channel_id = 927912771511791637
+    # Set the image to the embed
+    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+
+    # Send the message with the embed and the image file
+    await gacha_channel.send(embed=embed, file=image_file, view=GachaView())
+
+    leaderboard_channel_id = 1295940346320257086
     leaderboard = Leaderboard(bot, leaderboard_channel_id)
     
-
     leaderboard.start_leaderboard_updates.start()
 
 

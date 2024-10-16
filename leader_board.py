@@ -31,21 +31,22 @@ class Leaderboard:
         self.message = None  # To keep track of the leaderboard message in the channel
 
     async def update_leaderboard(self):
-        """Fetch the top 10 users by level and update the message in the leaderboard channel."""
-        top_users = User.objects().order_by('-level', '-exp')[:10]
+        """Fetch the top 10 users by level and roll_all_time and update the message in the leaderboard channel."""
+        # Fetch top 10 users, first by level, then by roll_all_time
+        top_users = User.objects().order_by('-level', '-roll_all_time')[:10]
         
         if not top_users:
             return "No users found in the leaderboard."
 
         embed = discord.Embed(
-            title="Leaderboard - Top 10 Users by Level",
+            title="Leaderboard - Top 10 Users by Level and Gacha Rolls",
             color=discord.Color.gold()
         )
 
         for index, user in enumerate(top_users, 1):
             embed.add_field(
                 name=f"#{index} - {user.user_name}",
-                value=f"Level: {user.level}, EXP: {user.exp}",
+                value=f"Level: {user.level}, EXP: {user.exp}, Total Rolls: {user.roll_all_time}",
                 inline=False
             )
 

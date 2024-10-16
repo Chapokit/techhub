@@ -23,6 +23,39 @@ intents.voice_states = True
 intents.presences = True
 intents.message_content = True  
 
+
+class PrizeView(discord.ui.View):
+    def __init__(self, user_id):
+        super().__init__()
+        self.user_id = user_id
+
+    @discord.ui.button(label="Claim Prize 🎁", style=discord.ButtonStyle.success)
+    async def claim_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
+        user = User.objects(discord_id=str(self.user_id)).first()
+        
+        if user:
+            # Check if the user has at least one of each fragment
+            if (user.fragment['fragment1'] >= 1 and
+                user.fragment['fragment2'] >= 1 and
+                user.fragment['fragment3'] >= 1):
+                
+                # Deduct one from each fragment
+                user.fragment['fragment1'] -= 1
+                user.fragment['fragment2'] -= 1
+                user.fragment['fragment3'] -= 1
+                
+                # Add the item to the user's inventory (for example, "Mystery Box")
+                # You can change this to whatever item you want to give
+                user.inventory.append("Mystery Prize")  # Assuming you have an inventory field
+                user.save()
+                
+                await interaction.response.send_message("You have claimed your prize! 🎉", ephemeral=True)
+            else:
+                await interaction.response.send_message("You need at least one of each fragment to claim this prize.", ephemeral=True)
+        else:
+            await interaction.response.send_message("User not found.", ephemeral=True)
+
+
 class GachaView(discord.ui.View):
     def __init__(self):
         super().__init__()
@@ -51,37 +84,63 @@ class GachaView(discord.ui.View):
         await asyncio.sleep(60)
         await gacha_message.delete()
 
-    @discord.ui.button(label="Roll Gacha x1", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Roll Gacha x1 🎰", style=discord.ButtonStyle.primary, row=0)
     async def one_roll(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        await self.countdown(interaction)
+        
+        user = User.objects(discord_id=str(interaction.user.id)).first()
+        if user.roll_count > 0:
+            user.roll_count -= 1
+            user.roll_all_time += 1
+            user.save()
 
-        result = roll_gacha(interaction.user.id)  # Call the gacha function
-        await self.send_gacha_results(interaction, [result])
+            await interaction.response.defer()
+            await self.countdown(interaction)
 
-    @discord.ui.button(label="Roll Gacha x10", style=discord.ButtonStyle.primary, row=0)
-    async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        await self.countdown(interaction)
-
-        results = []
-        for _ in range(10):
             result = roll_gacha(interaction.user.id)  # Call the gacha function
-            results.append(result)
+            await self.send_gacha_results(interaction, [result])
+        
+        else:
+            await interaction.response.send_message("You don't have enough gacha points.", ephemeral=True)
 
-        await self.send_gacha_results(interaction, results)
 
-    @discord.ui.button(label="Check Gacha Rate", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Roll Gacha x10 🎰", style=discord.ButtonStyle.primary, row=0)
+    async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        user = User.objects(discord_id=str(interaction.user.id)).first()
+        if user.roll_count > 10:
+            user.roll_count -= 10
+            user.roll_all_time += 10
+            user.save()
+
+            await interaction.response.defer()
+            await self.countdown(interaction)
+
+            results = []
+            for _ in range(10):
+                result = roll_gacha(interaction.user.id)  # Call the gacha function
+                results.append(result)
+
+            await self.send_gacha_results(interaction, results)
+
+        else:
+            await interaction.response.send_message("You don't have enough gacha points.", ephemeral=True)
+
+    @discord.ui.button(label="Check Gacha Rate %", style=discord.ButtonStyle.primary, row=1)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
         gacha_rate = check_rate(user_id=interaction.user.id)
         
         embed = discord.Embed(
             title="*****GACHA RATE******",
-            description=f"**User Name:** {interaction.user.name}\n**Gacha Rate:** {gacha_rate} %",
+            description=f"**User Name:** {interaction.user.name}\n**Gacha Rate:** {gacha_rate} %\n Your gacha rates depend on your level",
             color=discord.Color.darker_gray()
         )
         
         await interaction.response.send_message(embed=embed)
+
+    @discord.ui.button(label="Buy Prize 🎁", style=discord.ButtonStyle.success, row=1)
+    async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
+        prize_view = PrizeView(user_id=interaction.user.id)  # Create a PrizeView for the user
+        await interaction.response.send_message("Click the button below to claim your prize.", view=prize_view, ephemeral=True)
 
 class GachaResult(discord.ui.View):
     def __init__(self, user_id, discord_user):
@@ -91,4 +150,4 @@ class GachaResult(discord.ui.View):
 
     async def display_result(self, interaction: discord.Interaction):
         result = roll_gacha(self.user_id)
-        await interaction.followup.send(result, ephemeral = True)  # Send the actual result after processing
+        await interaction.followup.send(result, ephemeral=True)  # Send the actual result after processing
