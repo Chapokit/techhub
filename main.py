@@ -51,23 +51,66 @@ class ShowMenu(discord.ui.View):
         if user:
             # Create an embed to display the user's inventory
             embed = discord.Embed(title=f"{user.user_name}'s Inventory", color=discord.Color.blue())
-            embed.add_field(name="Level", value=user.level, inline=True)
+
+            embed.add_field(name="Level", value=f"`{user.level}`", inline=True)
             embed.add_field(name="Experience", value=user.exp, inline=True)
-            embed.add_field(name="Fragments", value=f"Fragment 1: {user.fragment['fragment1']}\n"
-                                                    f"Fragment 2: {user.fragment['fragment2']}\n"
-                                                    f"Fragment 3: {user.fragment['fragment3']}", inline=False)
+            embed.add_field(name="**Fragments**", value=f"🪨 `Fragment 1` `{user.fragment['fragment1']}`  |"
+                                                    f"🧱 `Fragment 2` `{user.fragment['fragment2']}`  |"
+                                                    f"💎 `Fragment 3` `{user.fragment['fragment3']}` ", inline=False)
 
-            # Add inventory to the embed
-            if user.inventory:
-                inventory_str = "\n".join(user.inventory)  # Join all inventory items as a string
-            else:
-                inventory_str = "No items in inventory."
+            # Inventory items and their emojis
+            inventory_items = {
+                "Diamond": "💎",
+                "Iron": "🔩",
+                "Gold": "🪙",
+                "Apple": "🍎",
+                "Bread": "🍞",
+                "Sword": "🗡️",
+                "Shield": "🛡️"
+            }
 
-            embed.add_field(name="Inventory", value=inventory_str, inline=False)
+            # Dummy values for item quantities (replace these with actual inventory counts from the user)
+            item_values = {
+                "Diamond": 3,
+                "Iron": 5,
+                "Gold": 2,
+                "Apple": 10,
+                "Bread": 7,
+                "Sword": 1,
+                "Shield": 1
+            }
+
+            # Create a list to store formatted inventory display
+            inventory_rows = []
+            current_row = []
+
+            for item, emoji in inventory_items.items():
+                value = item_values.get(item, 0)  # Get the count of the item, default to 0 if not found
+                current_row.append(f"{emoji}`{value}`")  # Add formatted item to the current row
+
+                if len(current_row) == 4:  # If we have 4 items in the current row, join and reset
+                    inventory_rows.append(" | ".join(current_row))  # Join with a separator
+                    current_row = []
+
+            # Add any remaining items in the current row
+            if current_row:
+                inventory_rows.append(" | ".join(current_row))
+
+            # Add the inventory display to the embed
+            embed.add_field(
+                name="Inventory",
+                value="\n".join(inventory_rows),  # Join all rows into a single string
+                inline=False  # Ensure it doesn't try to align it horizontally with other fields
+            )
+
+            # Add a thumbnail image for the inventory
+            embed.set_thumbnail(url="https://i.imgur.com/XMSlzCc.png")  # Example image, you can change it
 
             await interaction.response.send_message(embed=embed, ephemeral=True)  # Send the embed message
         else:
             await interaction.response.send_message("User not found.", ephemeral=True)
+
+
 
     
     @discord.ui.button(label="Search Profile by ID/Name 🔎", style=discord.ButtonStyle.primary, row=1)
@@ -126,7 +169,7 @@ class SearchProfileModal(discord.ui.Modal):
             # embed.add_field(name="Minor Badges", value=", ".join([badge.name for badge in user.minor_badges]))
             # embed.add_field(name="Projects", value=", ".join([project.name for project in user.projects]) or "No projects yet")
 
-            await interaction.response.send_message(embed=embed)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             await interaction.response.send_message("User not found. Please try again.", ephemeral=True)
 

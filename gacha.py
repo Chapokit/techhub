@@ -44,8 +44,6 @@ class PrizeView(discord.ui.View):
                 user.fragment['fragment2'] -= 1
                 user.fragment['fragment3'] -= 1
                 
-                # Add the item to the user's inventory (for example, "Mystery Box")
-                # You can change this to whatever item you want to give
                 user.inventory.append("Mystery Prize")  # Assuming you have an inventory field
                 user.save()
                 
@@ -100,7 +98,7 @@ class GachaView(discord.ui.View):
             await self.send_gacha_results(interaction, [result])
         
         else:
-            await interaction.response.send_message("You don't have enough gacha points.", ephemeral=True)
+            await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
 
 
     @discord.ui.button(label="Roll Gacha x10 🎰", style=discord.ButtonStyle.primary, row=0)
@@ -123,7 +121,7 @@ class GachaView(discord.ui.View):
             await self.send_gacha_results(interaction, results)
 
         else:
-            await interaction.response.send_message("You don't have enough gacha points.", ephemeral=True)
+            await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
 
     @discord.ui.button(label="Check Gacha Rate %", style=discord.ButtonStyle.primary, row=1)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -135,12 +133,32 @@ class GachaView(discord.ui.View):
             color=discord.Color.darker_gray()
         )
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="Buy Prize 🎁", style=discord.ButtonStyle.success, row=1)
+    @discord.ui.button(label="Buy Prizes 🎁", style=discord.ButtonStyle.success, row=1)
     async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
-        prize_view = PrizeView(user_id=interaction.user.id)  # Create a PrizeView for the user
-        await interaction.response.send_message("Click the button below to claim your prize.", view=prize_view, ephemeral=True)
+        # Create the embed for the prize requirements
+        embed = discord.Embed(
+            title="Prize Purchase",
+            description="To claim your prize, you need the following:",
+            color=discord.Color.green()
+        )
+        
+        # Add fields for required information (customize as needed)
+        embed.add_field(name="Requirement 1", value="1000 coins", inline=False)
+        embed.add_field(name="Requirement 2", value="Level 5 or above", inline=False)
+        embed.add_field(name="Requirement 3", value="1 Gacha Roll", inline=False)
+
+        # Create a PrizeView for the user
+        prize_view = PrizeView(user_id=interaction.user.id)
+
+        # Send both the embed and the button in the same message
+        await interaction.response.send_message(
+            "Click the button below to claim your prize.",
+            embed=embed,
+            view=prize_view,
+            ephemeral=True  # Make the message visible only to the user
+        )
 
 class GachaResult(discord.ui.View):
     def __init__(self, user_id, discord_user):

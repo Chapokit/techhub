@@ -1,1 +1,1 @@
-                                    f"**Level:** {user.le
+https://i.imgur.com/cZY6X56.png

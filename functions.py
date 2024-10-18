@@ -57,13 +57,16 @@ def check_rate(user_id):
 
     return 1 / rate * 100
     
-def level_up(user_id):
-
-    user = User.objects(discord_id=user_id).first()
-
+def exp_needed_for_level(level):
     base_exp = 100
     multiplier = 1.1
-    exp_needed = base_exp * (multiplier)**user.level
+    exp_needed = base_exp * (multiplier ** level)
+    return exp_needed
+
+def level_up(user_id):
+    user = User.objects(discord_id=user_id).first()
+
+    exp_needed = exp_needed_for_level(user.level)
     if user.exp >= exp_needed:
         user.exp -= exp_needed
         user.level += 1
