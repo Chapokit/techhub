@@ -53,7 +53,21 @@ class ShowMenu(discord.ui.View):
             embed = discord.Embed(title=f"{user.user_name}'s Inventory", color=discord.Color.blue())
 
             embed.add_field(name="Level", value=f"`{user.level}`", inline=True)
-            embed.add_field(name="Experience", value=user.exp, inline=True)
+
+            # Calculate experience needed for the next level
+            exp_needed = exp_needed_for_level(user.level)
+            
+            # Create the progress bar
+            total_exp = user.exp + (exp_needed - user.exp)  # Total experience to visualize
+            filled_length = int(20 * user.exp / total_exp)  # Calculate how much of the bar is filled
+            unfilled_length = 20 - filled_length  # Calculate the unfilled length
+
+            # Construct the progress bar
+            bar = "🟩" * filled_length + "⬜" * unfilled_length  # Green for current exp, gray for needed exp
+
+            # Add experience field with progress bar
+            embed.add_field(name="Experience", value=f"{bar} `{user.exp}/{exp_needed}`", inline=True)
+
             embed.add_field(name="**Fragments**", value=f"🪨 `Fragment 1` `{user.fragment['fragment1']}`  |"
                                                     f"🧱 `Fragment 2` `{user.fragment['fragment2']}`  |"
                                                     f"💎 `Fragment 3` `{user.fragment['fragment3']}` ", inline=False)
