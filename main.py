@@ -56,17 +56,22 @@ class ShowMenu(discord.ui.View):
 
             # Calculate experience needed for the next level
             exp_needed = exp_needed_for_level(user.level)
-            
-            # Create the progress bar
-            total_exp = user.exp + (exp_needed - user.exp)  # Total experience to visualize
-            filled_length = int(20 * user.exp / total_exp)  # Calculate how much of the bar is filled
+
+            # Create the progress bar based on a percentage
+            if exp_needed > 0:  # Prevent division by zero
+                percentage = min(100, (user.exp / exp_needed) * 100)  # Calculate the percentage, capped at 100%
+                filled_length = int(20 * (percentage / 100))  # Calculate how much of the bar is filled
+            else:
+                filled_length = 0
+
             unfilled_length = 20 - filled_length  # Calculate the unfilled length
 
             # Construct the progress bar
             bar = "🟩" * filled_length + "⬜" * unfilled_length  # Green for current exp, gray for needed exp
 
-            # Add experience field with progress bar
-            embed.add_field(name="Experience", value=f"{bar} `{user.exp}/{exp_needed}`", inline=True)
+            # Add experience field with progress bar and current/needed experience
+            embed.add_field(name="Experience", value=f"{bar} `{user.exp}/{exp_needed}` ({percentage:.1f}%)", inline=True)
+
 
             embed.add_field(name="**Fragments**", value=f"🪨 `Fragment 1` `{user.fragment['fragment1']}`  |"
                                                     f"🧱 `Fragment 2` `{user.fragment['fragment2']}`  |"
