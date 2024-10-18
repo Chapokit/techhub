@@ -135,7 +135,7 @@ class GachaView(discord.ui.View):
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="``Buy Prizes 🎁``", style=discord.ButtonStyle.success, row=1)
+    @discord.ui.button(label="Buy Prizes 🎁", style=discord.ButtonStyle.success, row=1)
     async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create the embed for the prize requirements
         embed = discord.Embed(
