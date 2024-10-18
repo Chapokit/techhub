@@ -60,20 +60,20 @@ class ShowMenu(discord.ui.View):
             # Create the progress bar based on a percentage
             if exp_needed > 0:  # Prevent division by zero
                 percentage = min(100, (user.exp / exp_needed) * 100)  # Calculate the percentage, capped at 100%
-                filled_length = int(20 * (percentage / 100))  # Calculate how much of the bar is filled
+                filled_length = int(10 * (percentage / 100))  # Calculate how much of the bar is filled (max 10 blocks)
             else:
                 filled_length = 0
 
-            unfilled_length = 20 - filled_length  # Calculate the unfilled length
+            unfilled_length = 10 - filled_length  # Calculate the unfilled length
 
             # Construct the progress bar
             bar = "🟩" * filled_length + "⬜" * unfilled_length  # Green for current exp, gray for needed exp
 
             # Add experience field with progress bar and current/needed experience
-            embed.add_field(name="Experience", value=f"{bar} `{user.exp}/{exp_needed}` ({percentage:.1f}%)", inline=True)
+            embed.add_field(name="Experience", value=f"{bar}  (*{percentage:.1f}%*)", inline=True)
 
 
-            embed.add_field(name="**Fragments**", value=f"🪨 `Fragment 1` `{user.fragment['fragment1']}`  |"
+            embed.add_field(name="Fragments", value=f"🪨 `Fragment 1` `{user.fragment['fragment1']}`  |"
                                                     f"🧱 `Fragment 2` `{user.fragment['fragment2']}`  |"
                                                     f"💎 `Fragment 3` `{user.fragment['fragment3']}` ", inline=False)
 
@@ -121,9 +121,6 @@ class ShowMenu(discord.ui.View):
                 value="\n".join(inventory_rows),  # Join all rows into a single string
                 inline=False  # Ensure it doesn't try to align it horizontally with other fields
             )
-
-            # Add a thumbnail image for the inventory
-            embed.set_thumbnail(url="https://i.imgur.com/XMSlzCc.png")  # Example image, you can change it
 
             await interaction.response.send_message(embed=embed, ephemeral=True)  # Send the embed message
         else:
