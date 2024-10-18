@@ -128,14 +128,14 @@ class GachaView(discord.ui.View):
         gacha_rate = check_rate(user_id=interaction.user.id)
         
         embed = discord.Embed(
-            title="*****GACHA RATE******",
-            description=f"**User Name:** {interaction.user.name}\n**Gacha Rate:** {gacha_rate} %\n Your gacha rates depend on your level",
+            title="``**GACHA RATE** 🎰🤑``",
+            description=f"``**User Name:**`` {interaction.user.name}\n``**Gacha Rate:**`` {gacha_rate} %\n ``Your gacha rates depend on your level``",
             color=discord.Color.darker_gray()
         )
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="Buy Prizes 🎁", style=discord.ButtonStyle.success, row=1)
+    @discord.ui.button(label="``Buy Prizes 🎁``", style=discord.ButtonStyle.success, row=1)
     async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create the embed for the prize requirements
         embed = discord.Embed(
