@@ -126,8 +126,6 @@ class ShowMenu(discord.ui.View):
         else:
             await interaction.response.send_message("User not found.", ephemeral=True)
 
-
-
     
     @discord.ui.button(label="Search Profile by ID/Name 🔎", style=discord.ButtonStyle.primary, row=1)
     async def search_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -146,9 +144,9 @@ class ProfileDisplay(discord.ui.View):
         if user:
             embed = discord.Embed(
                                 title="User Profile",
-                                description=f"**User Name:** {user.user_name}\n"
-                                            f"**Level:** {user.level}\n"
-                                            f"**Exp:** {user.exp}\n",
+                                description=f"`User Name` {user.user_name}\n"
+                                            f"`Level` {user.level}\n"
+                                            f"`Exp` {user.exp}\n",
                                 color=discord.Color.darker_gray())
 
             embed.set_thumbnail(url=self.discord_user.avatar.url)
