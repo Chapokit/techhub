@@ -13,49 +13,61 @@ from pymongo.server_api import ServerApi
 
 from classes import *
 
+import random
+
 def roll_gacha(user_id):
     user = User.objects(discord_id=str(user_id)).first()
 
-    # Get the user's level directly
     effective_level = user.level
-
-    # Cap the effective level to a maximum value to prevent extreme scaling
-    max_level = 100  # Set a reasonable maximum level
+    max_level = 100
     effective_level = min(effective_level, max_level)
 
-    base_rate = 1000
-    scaling_factor = 1
+    # Calculate rarities based on level
+    common_rate = 100 - (0.75 * effective_level ** 1.5 + 1)
+    legend_rate = (100 - common_rate) * 0.03 * effective_level
+    rare_rate = 100 - common_rate - legend_rate
 
-    # Calculate the rate based on the effective level
-    rate = base_rate / (1 + (effective_level - 1) * scaling_factor)
+    # Generate a random number to determine the outcome
+    result = random.uniform(0, 100)
 
-    # Ensure the rate is not less than 1 to avoid invalid random range
-    rate = max(rate, 1)
-
-    # Use max(1, int(rate)) to avoid empty range
-    result = random.randint(1, int(rate))
-
-    if result == 1:
+    if result <= common_rate:
+        # Common roll logic
         fragment_number = random.randint(1, 3)
         user.fragment[f"fragment{fragment_number}"] += 1
         user.save()
-        return f"fragment_{fragment_number}"
-    else:
-        return "Nothing"
-    
-def check_rate(user_id):
+        return f"Common Fragment {fragment_number}"
 
+    elif result <= common_rate + rare_rate:
+        # Rare roll logic
+        fragment_number = random.randint(1, 3)
+        user.fragment[f"fragment{fragment_number}"] += 1
+        user.save()
+        return f"Rare Fragment {fragment_number}"
+
+    else:
+        # Legend roll logic
+        fragment_number = random.randint(1, 3)
+        user.fragment[f"fragment{fragment_number}"] += 1
+        user.save()
+        return f"Legendary Fragment {fragment_number}"
+
+def check_rate(user_id):
     user = User.objects(discord_id=str(user_id)).first()
 
-    base_rate = 10000
+    effective_level = user.level
+    max_level = 100
+    effective_level = min(effective_level, max_level)
 
-    def calculate_rate(level):
-        scaling_factor = 0.5
-        return base_rate / (1 + (level - 1) * scaling_factor)
+    # Calculate rarities based on level
+    common_rate = 100 - (0.75 * effective_level ** 1.5 + 1)
+    legend_rate = (100 - common_rate) * 0.03 * effective_level
+    rare_rate = 100 - common_rate - legend_rate
 
-    rate = calculate_rate(user.level)
-
-    return 1 / rate * 100
+    return {
+        "Common%": common_rate,
+        "Rare%": rare_rate,
+        "Legend%": legend_rate
+    }
     
 def exp_needed_for_level(level):
     base_exp = 100
