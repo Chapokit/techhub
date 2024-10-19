@@ -289,6 +289,11 @@ async def on_member_join(member):
     if channel is not None:
         await channel.send(f"Welcome {member.mention}! Your user profile has been created.")
 
+    try:
+        await member.send(f"Hey {member.name}, welcome to the server! If you have any questions, feel free to ask.")
+    except discord.Forbidden:
+        print(f"Could not send a DM to {member.name}.")
+
 
 @bot.command(name="create_users")
 @commands.has_permissions(administrator=True)  # Only allow administrators to use this command
