@@ -358,15 +358,15 @@ async def on_ready():
             )
     
         # Open the image file in binary read mode
-    image_path = 'picture/grey.png'
-    with open(image_path, 'rb') as file:
-        image_file = discord.File(file, os.path.basename(image_path))
+    # image_path = 'picture/grey.png'
+    # with open(image_path, 'rb') as file:
+    #     image_file = discord.File(file, os.path.basename(image_path))
 
     # Set the image to the embed
-    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+    # embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
 
     # Send the message with the embed and the image file
-    await gacha_channel.send(embed=embed, file=image_file, view=GachaView())
+    await gacha_channel.send(embed=embed, view=GachaView())
 
     leaderboard_channel_id = 1295940346320257086
     leaderboard = Leaderboard(bot, leaderboard_channel_id)
