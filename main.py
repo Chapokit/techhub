@@ -38,6 +38,10 @@ class ShowMenu(discord.ui.View):
     def __init__(self):
         super().__init__()
 
+    # @discord.ui.button(label="Test 📝", style=discord.ButtonStyle.primary, row=0)
+    # async def test(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #     await interaction.response.send_message("```ansi\nWelcome to [2;33mRebane[0m's [2;45m[2;37mDiscord[0m[2;45m[0m [2;31mC[0m[2;32mo[0m[2;33ml[0m[2;34mo[0m[2;35mr[0m[2;36me[0m[2;37md[0m Text Generator!\n```", ephemeral=True)
+
     @discord.ui.button(label="Show Profile 📝", style=discord.ButtonStyle.primary, row=0)
     async def show_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create an instance of the ProfileDisplay class and call its display_profile method
@@ -72,10 +76,22 @@ class ShowMenu(discord.ui.View):
             # Add experience field with progress bar and current/needed experience
             embed.add_field(name="Experience", value=f"{bar}  (*{percentage:.1f}%*)", inline=True)
 
+            # Dynamically add fragments that are greater than 0
+            fragment_display = []
+            fragment_names = {
+                "fragment1": "🪨 `Fragment 1`",
+                "fragment2": "🧱 `Fragment 2`",
+                "fragment3": "💎 `Fragment 3`"
+            }
 
-            embed.add_field(name="Fragments", value=f"🪨 `Fragment 1` `{user.fragment['fragment1']}`  |"
-                                                    f"🧱 `Fragment 2` `{user.fragment['fragment2']}`  |"
-                                                    f"💎 `Fragment 3` `{user.fragment['fragment3']}` ", inline=False)
+            for fragment_key, fragment_name in fragment_names.items():
+                fragment_value = user.fragment.get(fragment_key, 0)  # Get the fragment value, default to 0
+                if fragment_value > 0:
+                    fragment_display.append(f"{fragment_name} `{fragment_value}/4`")
+
+            # Only add the field if there's something to display
+            if fragment_display:
+                embed.add_field(name="Fragments", value=" | ".join(fragment_display), inline=False)
 
             # Inventory items and their emojis
             inventory_items = {
@@ -105,7 +121,7 @@ class ShowMenu(discord.ui.View):
 
             for item, emoji in inventory_items.items():
                 value = item_values.get(item, 0)  # Get the count of the item, default to 0 if not found
-                current_row.append(f"{emoji}`{value}`")  # Add formatted item to the current row
+                current_row.append(f"{emoji} `{item}`: `{value}`")  # Add formatted item with name to the current row
 
                 if len(current_row) == 4:  # If we have 4 items in the current row, join and reset
                     inventory_rows.append(" | ".join(current_row))  # Join with a separator
@@ -126,6 +142,7 @@ class ShowMenu(discord.ui.View):
         else:
             await interaction.response.send_message("User not found.", ephemeral=True)
 
+
     @discord.ui.button(label="Search Profile by ID/Name 🔎", style=discord.ButtonStyle.primary, row=1)
     async def search_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create and show the modal for searching by ID or name
@@ -133,29 +150,47 @@ class ShowMenu(discord.ui.View):
 
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
-        super().__init__(timeout=None)  
+        super().__init__(timeout=None)
         self.user_id = user_id
         self.discord_user = discord_user
 
     async def send_profile(self, interaction: discord.Interaction):
-
         user = User.objects(discord_id=str(self.user_id)).first()
         if user:
-            embed = discord.Embed(
-                                title="User Profile",
-                                description=f"`User Name` {user.user_name}\n"
-                                            f"`Level` {user.level}\n"
-                                            f"`Exp` {user.exp}\n",
-                                color=discord.Color.darker_gray())
+            # Calculate experience needed for the next level
+            exp_needed = exp_needed_for_level(user.level)
 
-            embed.set_thumbnail(url=self.discord_user.avatar.url)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            # Create the progress bar based on a percentage
+            if exp_needed > 0:  # Prevent division by zero
+                percentage = min(100, (user.exp / exp_needed) * 100)  # Calculate the percentage, capped at 100%
+                filled_length = int(10 * (percentage / 100))  # Calculate how much of the bar is filled (max 10 blocks)
+            else:
+                filled_length = 0
+
+            unfilled_length = 10 - filled_length  # Calculate the unfilled length
+
+            # Construct the progress bar
+            bar = "🟩" * filled_length + "⬜" * unfilled_length  # Green for current exp, gray for needed exp
+
+            # Create the embed with the progress bar
+            embed = discord.Embed(
+                title="User Profile",
+                description=f"User Name: `{user.user_name}`\n"
+                            f"Level: `{user.level}`\n"
+                            f"Exp: `{user.exp}` / `{exp_needed:.0f}`\n"
+                            f"Progress: {bar} (*{percentage:.1f}%*)",
+                color=discord.Color.darker_gray()
+            )
+
+            embed.set_thumbnail(url=self.discord_user.avatar.url)  # Set avatar as thumbnail
+            await interaction.response.send_message(embed=embed, ephemeral=True)  # Send the profile embed
         else:
             print("User Not Found")
 
 class SearchProfileModal(discord.ui.Modal):
     def __init__(self):
         super().__init__(title="Search User Profile", custom_id="search_profile_modal")
+
 
         self.search_query = discord.ui.TextInput(
             label="Enter Discord ID or Name",
@@ -170,21 +205,12 @@ class SearchProfileModal(discord.ui.Modal):
         user = User.objects(discord_id=query).first() or User.objects(user_name=query).first()
 
         if user:
-            embed = discord.Embed(
-                title=f"Profile: {user.user_name}",
-                # description=user.user_description,
-                color=discord.Color.green()
-            )
-            # embed.add_field(name="Rank", value=user.rank)
-            embed.add_field(name="Level", value=user.level)
-            embed.add_field(name="Exp", value=user.exp)
-            # embed.add_field(name="Major Badges", value=", ".join([badge.name for badge in user.major_badges]))
-            # embed.add_field(name="Minor Badges", value=", ".join([badge.name for badge in user.minor_badges]))
-            # embed.add_field(name="Projects", value=", ".join([project.name for project in user.projects]) or "No projects yet")
-
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            # Instantiate the ProfileDisplay class and call send_profile
+            profile_view = ProfileDisplay(user_id=user.discord_id, discord_user=interaction.user)
+            await profile_view.send_profile(interaction)
         else:
             await interaction.response.send_message("User not found. Please try again.", ephemeral=True)
+
 
 
 # Dictionary to store user join times
