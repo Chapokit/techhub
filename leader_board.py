@@ -24,6 +24,18 @@ intents.voice_states = True
 intents.presences = True
 intents.message_content = True
 
+class RedisplayLeaderboard(discord.ui.View):
+    def __init__(self, leaderboard):
+        super().__init__()
+        self.leaderboard = leaderboard  # Store reference to the leaderboard instance
+
+    @discord.ui.button(label="Update Leaderboard", style=discord.ButtonStyle.primary)
+    async def update_leaderboard(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.leaderboard.update_leaderboard()  # Call the update method
+        await interaction.response.defer()  # Defer the response so the button interaction doesn't time out
+
+
+
 class Leaderboard:
     def __init__(self, bot, channel_id):
         self.bot = bot
@@ -32,7 +44,6 @@ class Leaderboard:
 
     async def update_leaderboard(self):
         """Fetch the top 10 users by level and roll_all_time and update the message in the leaderboard channel."""
-        # Fetch top 10 users, first by level, then by roll_all_time
         top_users = User.objects().order_by('-level', '-roll_all_time')[:10]
         
         if not top_users:
@@ -52,11 +63,10 @@ class Leaderboard:
 
         channel = self.bot.get_channel(self.channel_id)
         if channel is not None:
-            # Update the message or send a new one
             if self.message is None:
-                self.message = await channel.send(embed=embed)
+                self.message = await channel.send(embed=embed, view=RedisplayLeaderboard(self))  # Send the new message
             else:
-                await self.message.edit(embed=embed)  # Edit the existing message to update it
+                await self.message.edit(embed=embed)  # Edit the existing message
 
     @tasks.loop(minutes=5.0)  # Set the interval for leaderboard updates (e.g., every 5 minutes)
     async def start_leaderboard_updates(self):

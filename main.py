@@ -142,7 +142,6 @@ class ShowMenu(discord.ui.View):
         else:
             await interaction.response.send_message("User not found.", ephemeral=True)
 
-
     @discord.ui.button(label="Search Profile by ID/Name 🔎", style=discord.ButtonStyle.primary, row=1)
     async def search_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create and show the modal for searching by ID or name
