@@ -38,10 +38,6 @@ class ShowMenu(discord.ui.View):
     def __init__(self):
         super().__init__()
 
-    # @discord.ui.button(label="Test 📝", style=discord.ButtonStyle.primary, row=0)
-    # async def test(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     await interaction.response.send_message("```ansi\nWelcome to [2;33mRebane[0m's [2;45m[2;37mDiscord[0m[2;45m[0m [2;31mC[0m[2;32mo[0m[2;33ml[0m[2;34mo[0m[2;35mr[0m[2;36me[0m[2;37md[0m Text Generator!\n```", ephemeral=True)
-
     @discord.ui.button(label="Show Profile 📝", style=discord.ButtonStyle.primary, row=0)
     async def show_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create an instance of the ProfileDisplay class and call its display_profile method
