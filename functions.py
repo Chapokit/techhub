@@ -16,12 +16,14 @@ from classes import *
 import random
 
 def roll_gacha(user_id):
-
-    common_item = ['HCoin', 'fragment1']
-    rare_item = ['Big Enter', 'JBL' , 'Rimuru', 'fragment2']
-    legend_item = ['Dvoom', 'Mechancal keyboard', 'fragment3']
+    common_item = ['HCoin']
+    rare_item = ['Big Enter', 'JBL', 'Rimuru']
+    legend_item = ['Dvoom', 'Mechanical']
 
     user = User.objects(discord_id=str(user_id)).first()
+
+    if not user:
+        raise ValueError("User not found")
 
     effective_level = user.level
     max_level = 100
@@ -29,7 +31,7 @@ def roll_gacha(user_id):
 
     # Calculate rarities based on level
     common_rate = 100 - (0.75 * effective_level ** 1.5 + 1)
-    legend_rate = (100 - common_rate) * 0.03 * effective_level
+    legend_rate = (100 - common_rate) * 0.03
     rare_rate = 100 - common_rate - legend_rate
 
     # Generate a random number to determine the outcome
@@ -38,24 +40,18 @@ def roll_gacha(user_id):
     if result <= common_rate:
         # Common roll logic
         gacha_result = random.choice(common_item)
-        user.inventory[gacha_result] += 1
-        user.save()
-        return gacha_result
-
     elif result <= common_rate + rare_rate:
         # Rare roll logic
         gacha_result = random.choice(rare_item)
-        user.inventory[gacha_result] += 1
-        user.save()
-        return gacha_result
-
     else:
         # Legend roll logic
         gacha_result = random.choice(legend_item)
-        user.inventory[legend_item] += 1
-        user.save()
-        return legend_item
 
+    # Increment inventory count for the rolled item
+    user.inventory[gacha_result] += 1
+    user.save()
+
+    return gacha_result
 def check_rate(user_id):
     user = User.objects(discord_id=str(user_id)).first()
 

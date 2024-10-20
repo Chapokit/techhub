@@ -71,31 +71,28 @@ class ShowMenu(discord.ui.View):
 
             # Add experience field with progress bar and current/needed experience
             embed.add_field(name="Experience", value=f"{bar}  (*{percentage:.1f}%*)", inline=True)
+            embed.add_field(name="Hamster Coin 🪙", value=f"`{user.inventory['HCoin']}`", inline=True)
 
-                        # Dynamically add fragments that are greater than 0
-            fragment_names = {"fragment1": "🪨", "fragment2": "🧱", "fragment3": "💎"}
-            fragment_display = []
-
-            for key, value in user.inventory.items():
-                if key in fragment_names and value > 0:
-                    fragment_display.append(f"{fragment_names[key]} `{key}` `{value}/4`")
-
-
-            # Only add the field if there's something to display
-            if fragment_display:
-                embed.add_field(name="Fragments", value=" | ".join(fragment_display), inline=False)
-
-            # Inventory items and their emojis
-            inventory_items = {'HCoin': '🪙', 'Big Enter': '🪙', 'JBL': '🪙', 'Rimuru': '🪙',
-                  'Dvoom': '🪙', 'Mechanical': '🪙'}
+            inventory_items = {
+                'Big Enter': ['🪙', 3], 
+                'JBL': ['🪙', 3], 
+                'Rimuru': ['🪙', 4],
+                'Dvoom': ['🪙', 5], 
+                'Mechanical': ['🪙', 5]
+            }
 
             # Create a list to store formatted inventory display
             inventory_rows = []
             current_row = []
 
-            for item, emoji in inventory_items.items():
-                value = user.inventory[item] # Get the count of the item, default to 0 if not found
-                current_row.append(f"{emoji} `{item}`: `{value}`")  # Add formatted item with name to the current row
+            for item, (emoji, max_value) in inventory_items.items():
+                # Get the count of the item from the user's inventory, default to 0 if not found
+                value = user.inventory.get(item, 0) 
+                if value == 0:
+                    pass
+                else:
+                    # Add formatted item with emoji, name, and count
+                    current_row.append(f"{emoji} `{item}`: `{value}/{max_value}`") 
 
                 if len(current_row) == 4:  # If we have 4 items in the current row, join and reset
                     inventory_rows.append(" | ".join(current_row))  # Join with a separator
@@ -105,10 +102,15 @@ class ShowMenu(discord.ui.View):
             if current_row:
                 inventory_rows.append(" | ".join(current_row))
 
+            if not inventory_rows:
+                inventory_display = "There are currently no fragments in your collection."
+            else:
+                inventory_display = "\n".join(inventory_rows)
+
             # Add the inventory display to the embed
             embed.add_field(
                 name="Inventory",
-                value="\n".join(inventory_rows),  # Join all rows into a single string
+                value=inventory_display,  # Join all rows into a single string
                 inline=False  # Ensure it doesn't try to align it horizontally with other fields
             )
 

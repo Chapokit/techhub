@@ -16,8 +16,7 @@ class User(Document):
     exp = fields.IntField(default=0)
 
     # 3. Inventory (Dictionary field)
-    inventory = fields.DictField(default=lambda: {"fragment1": 0, "fragment2": 0, "fragment3": 0
-                                                  , 'HCoin': 0, 'Big Enter': 0, 'JBL': 0, 'Rimuru': 0,
+    inventory = fields.DictField(default=lambda: {'HCoin': 0, 'Big Enter': 0, 'JBL': 0, 'Rimuru': 0,
                                                   'Dvoom': 0, 'Mechanical': 0})
 
     # 4. Gacha Roll
