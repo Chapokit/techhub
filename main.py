@@ -72,51 +72,29 @@ class ShowMenu(discord.ui.View):
             # Add experience field with progress bar and current/needed experience
             embed.add_field(name="Experience", value=f"{bar}  (*{percentage:.1f}%*)", inline=True)
 
-            # Dynamically add fragments that are greater than 0
+                        # Dynamically add fragments that are greater than 0
+            fragment_names = {"fragment1": "🪨", "fragment2": "🧱", "fragment3": "💎"}
             fragment_display = []
-            fragment_names = {
-                "fragment1": "🪨 `Fragment 1`",
-                "fragment2": "🧱 `Fragment 2`",
-                "fragment3": "💎 `Fragment 3`"
-            }
 
-            for fragment_key, fragment_name in fragment_names.items():
-                fragment_value = user.fragment.get(fragment_key, 0)  # Get the fragment value, default to 0
-                if fragment_value > 0:
-                    fragment_display.append(f"{fragment_name} `{fragment_value}/4`")
+            for key, value in user.inventory.items():
+                if key in fragment_names and value > 0:
+                    fragment_display.append(f"{fragment_names[key]} `{key}` `{value}/4`")
+
 
             # Only add the field if there's something to display
             if fragment_display:
                 embed.add_field(name="Fragments", value=" | ".join(fragment_display), inline=False)
 
             # Inventory items and their emojis
-            inventory_items = {
-                "Diamond": "💎",
-                "Iron": "🔩",
-                "Gold": "🪙",
-                "Apple": "🍎",
-                "Bread": "🍞",
-                "Sword": "🗡️",
-                "Shield": "🛡️"
-            }
-
-            # Dummy values for item quantities (replace these with actual inventory counts from the user)
-            item_values = {
-                "Diamond": 3,
-                "Iron": 5,
-                "Gold": 2,
-                "Apple": 10,
-                "Bread": 7,
-                "Sword": 1,
-                "Shield": 1
-            }
+            inventory_items = {'HCoin': '🪙', 'Big Enter': '🪙', 'JBL': '🪙', 'Rimuru': '🪙',
+                  'Dvoom': '🪙', 'Mechanical': '🪙'}
 
             # Create a list to store formatted inventory display
             inventory_rows = []
             current_row = []
 
             for item, emoji in inventory_items.items():
-                value = item_values.get(item, 0)  # Get the count of the item, default to 0 if not found
+                value = user.inventory[item] # Get the count of the item, default to 0 if not found
                 current_row.append(f"{emoji} `{item}`: `{value}`")  # Add formatted item with name to the current row
 
                 if len(current_row) == 4:  # If we have 4 items in the current row, join and reset

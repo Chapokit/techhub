@@ -16,6 +16,11 @@ from classes import *
 import random
 
 def roll_gacha(user_id):
+
+    common_item = ['HCoin', 'fragment1']
+    rare_item = ['Big Enter', 'JBL' , 'Rimuru', 'fragment2']
+    legend_item = ['Dvoom', 'Mechancal keyboard', 'fragment3']
+
     user = User.objects(discord_id=str(user_id)).first()
 
     effective_level = user.level
@@ -32,24 +37,24 @@ def roll_gacha(user_id):
 
     if result <= common_rate:
         # Common roll logic
-        fragment_number = random.randint(1, 3)
-        user.fragment[f"fragment{fragment_number}"] += 1
+        gacha_result = random.choice(common_item)
+        user.inventory[gacha_result] += 1
         user.save()
-        return f"Common Fragment {fragment_number}"
+        return gacha_result
 
     elif result <= common_rate + rare_rate:
         # Rare roll logic
-        fragment_number = random.randint(1, 3)
-        user.fragment[f"fragment{fragment_number}"] += 1
+        gacha_result = random.choice(rare_item)
+        user.inventory[gacha_result] += 1
         user.save()
-        return f"Rare Fragment {fragment_number}"
+        return gacha_result
 
     else:
         # Legend roll logic
-        fragment_number = random.randint(1, 3)
-        user.fragment[f"fragment{fragment_number}"] += 1
+        gacha_result = random.choice(legend_item)
+        user.inventory[legend_item] += 1
         user.save()
-        return f"Legendary Fragment {fragment_number}"
+        return legend_item
 
 def check_rate(user_id):
     user = User.objects(discord_id=str(user_id)).first()
