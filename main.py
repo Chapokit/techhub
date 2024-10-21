@@ -16,6 +16,7 @@ from pymongo.server_api import ServerApi
 from classes import *
 from functions import *
 from gacha import *
+from shop import *
 
 load_dotenv()
 
@@ -274,7 +275,6 @@ async def on_member_join(member):
     except discord.Forbidden:
         print(f"Could not send a DM to {member.name}.")
 
-
 @bot.command(name="create_users")
 @commands.has_permissions(administrator=True)  # Only allow administrators to use this command
 async def create_users(ctx):
@@ -330,6 +330,8 @@ async def on_ready():
     else:
         print(f"Channel with ID {channel_id} not found.")
 
+    # Gacha
+
     gacha_id = 1295940160415862865
     gacha_channel = bot.get_channel(gacha_id)
 
@@ -345,13 +347,27 @@ async def on_ready():
     # Set the image to the embed
     # embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
 
-    # Send the message with the embed and the image file
     await gacha_channel.send(embed=embed, view=GachaView())
 
     leaderboard_channel_id = 1295940346320257086
     leaderboard = Leaderboard(bot, leaderboard_channel_id)
     
     leaderboard.start_leaderboard_updates.start()
+
+
+    # Shop 
+
+    shop_id = 1297823533832863805
+    shop_channel = bot.get_channel(shop_id)
+
+    embed = discord.Embed(title="Techhub's Shop")
+
+    image_path = 'picture/shop.png'
+    with open(image_path, 'rb') as file:
+        image_file = discord.File(file, os.path.basename(image_path))
+    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+
+    await shop_channel.send(embed=embed, view=ShopView(), file=image_file)
 
 
 bot.run(BOT_TOKEN)
