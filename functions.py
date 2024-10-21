@@ -26,12 +26,12 @@ def roll_gacha(user_id):
         raise ValueError("User not found")
 
     effective_level = user.level
-    max_level = 100
+    max_level = 20
     effective_level = min(effective_level, max_level)
 
     # Calculate rarities based on level
     common_rate = 100 - (0.75 * effective_level ** 1.5 + 1)
-    legend_rate = (100 - common_rate) * 0.03
+    legend_rate = (100 - common_rate) * 0.03 * effective_level
     rare_rate = 100 - common_rate - legend_rate
 
     # Generate a random number to determine the outcome
@@ -52,11 +52,12 @@ def roll_gacha(user_id):
     user.save()
 
     return gacha_result
+
 def check_rate(user_id):
     user = User.objects(discord_id=str(user_id)).first()
 
     effective_level = user.level
-    max_level = 100
+    max_level = 20
     effective_level = min(effective_level, max_level)
 
     # Calculate rarities based on level

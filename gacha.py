@@ -98,7 +98,18 @@ class GachaView(discord.ui.View):
             await interaction.response.defer(ephemeral=True)
             await self.countdown(interaction)
 
-            result = roll_gacha(interaction.user.id)
+            common_item = ['HCoin']
+            rare_item = ['Big Enter', 'JBL', 'Rimuru']
+            legend_item = ['Dvoom', 'Mechanical']
+
+            roll = roll_gacha(interaction.user.id)
+            if roll in common_item:
+                result = f"🟩 Common: {roll}"
+            elif roll in rare_item:
+                result = f"🟦 Rare: {roll}"
+            elif roll in legend_item:
+                result = f"🟨 Legendary: {roll}"
+
             await self.send_gacha_results(interaction, [result])
         
         else:
@@ -115,7 +126,20 @@ class GachaView(discord.ui.View):
             await interaction.response.defer(ephemeral=True)
             await self.countdown(interaction)
 
-            results = [roll_gacha(interaction.user.id) for _ in range(10)]
+            common_item = ['HCoin']
+            rare_item = ['Big Enter', 'JBL', 'Rimuru']
+            legend_item = ['Dvoom', 'Mechanical']
+
+            results = []
+            for _ in range(10):
+                result = roll_gacha(interaction.user.id)
+                if result in common_item:
+                    results.append(f"🟩 Common: {result}")
+                elif result in rare_item:
+                    results.append(f"🟦  Rare: {result}")
+                elif result in legend_item:
+                    results.append(f"🟨 Legendary: {result}")
+
             await self.send_gacha_results(interaction, results)
         
         else:

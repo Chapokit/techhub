@@ -71,14 +71,14 @@ class ShowMenu(discord.ui.View):
 
             # Add experience field with progress bar and current/needed experience
             embed.add_field(name="Experience", value=f"{bar}  (*{percentage:.1f}%*)", inline=True)
-            embed.add_field(name="Hamster Coin 🪙", value=f"`{user.inventory['HCoin']}`", inline=True)
+            embed.add_field(name="Hamster Coin 🪙", value=f"`{user.inventory['HCoin']}`", inline=False)
 
             inventory_items = {
-                'Big Enter': ['🪙', 3], 
-                'JBL': ['🪙', 3], 
-                'Rimuru': ['🪙', 4],
-                'Dvoom': ['🪙', 5], 
-                'Mechanical': ['🪙', 5]
+                'Big Enter': ['⏎', 3], 
+                'JBL': ['🎧', 3], 
+                'Rimuru': ['🧢', 4],
+                'Dvoom': ['🖥️', 5], 
+                'Mechanical': ['⚙️', 5]
             }
 
             # Create a list to store formatted inventory display
@@ -94,7 +94,7 @@ class ShowMenu(discord.ui.View):
                     # Add formatted item with emoji, name, and count
                     current_row.append(f"{emoji} `{item}`: `{value}/{max_value}`") 
 
-                if len(current_row) == 4:  # If we have 4 items in the current row, join and reset
+                if len(current_row) == 3:  # If we have 4 items in the current row, join and reset
                     inventory_rows.append(" | ".join(current_row))  # Join with a separator
                     current_row = []
 
