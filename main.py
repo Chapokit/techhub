@@ -339,15 +339,15 @@ async def on_ready():
                 title="Techhub's Gacha"
             )
     
-        # Open the image file in binary read mode
-    # image_path = 'picture/grey.png'
-    # with open(image_path, 'rb') as file:
-    #     image_file = discord.File(file, os.path.basename(image_path))
+    # Open the image file in binary read mode
+    image_path = 'picture/grey.png'
+    with open(image_path, 'rb') as file:
+        image_file = discord.File(file, os.path.basename(image_path))
 
     # Set the image to the embed
-    # embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
 
-    await gacha_channel.send(embed=embed, view=GachaView())
+    await gacha_channel.send(embed=embed, file=image_file, view=GachaView())
 
     leaderboard_channel_id = 1295940346320257086
     leaderboard = Leaderboard(bot, leaderboard_channel_id)
@@ -362,7 +362,7 @@ async def on_ready():
 
     embed = discord.Embed(title="Techhub's Shop")
 
-    image_path = 'picture/shop.png'
+    image_path = 'picture/grey.png'
     with open(image_path, 'rb') as file:
         image_file = discord.File(file, os.path.basename(image_path))
     embed.set_image(url=f"attachment://{os.path.basename(image_path)}")

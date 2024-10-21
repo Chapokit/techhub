@@ -7,7 +7,7 @@ connect('techhub', host=str(os.getenv("MONGODB_URI")))
 
 class User(Document):
 
-    # 1. User Information
+    # 1. User Informa   tion
     discord_id = fields.StringField(required=True)
     user_name = fields.StringField(required=True)
 
