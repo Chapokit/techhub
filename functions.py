@@ -18,7 +18,7 @@ import random
 def roll_gacha(user_id):
     common_item = ['HCoin']
     rare_item = ['Big Enter', 'JBL', 'Rimuru']
-    legend_item = ['Dvoom', 'Mechanical']
+    legend_item = ['Divoom', 'Mechanical']
 
     user = User.objects(discord_id=str(user_id)).first()
 

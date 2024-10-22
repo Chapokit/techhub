@@ -77,11 +77,37 @@ class GachaView(discord.ui.View):
 
     async def send_gacha_results(self, interaction: discord.Interaction, results):
         embed = discord.Embed(title="Gacha Results", description="You got:")
-        for result in results:
+
+        if len(results) > 1:
+            for result in results:
+                embed.add_field(name=result, value=" ", inline=False)
+        else:
+            result = results[0]
             embed.add_field(name=result, value=" ", inline=False)
+
+            # Test whether the correct image is being added
+            if result == "HCoin":
+                image_url = "picture/hcoin.png"
+            elif result == "Big Enter":
+                image_url = "picture/bigenter.jpg"
+            elif result == "JBL":
+                image_url = "picture/jbl.jpg"
+            elif result == "Rimuru":
+                image_url = "picture/rimuru.png"
+            elif result == "Divoom":
+                image_url = "picture/divoom.png"
+            elif result == "Mechanical":
+                image_url = "picture/mechanical.jpg"
+            else:
+                image_url = None  # No image if no match found
+
+            if image_url:
+                print(f"Image URL: {image_url}")  # Debugging line to check image URL
+                embed.set_image(url=image_url)
 
         # Send the embed message with the results
         await interaction.followup.send(embed=embed, ephemeral=True)
+
 
         # Send the ResendGacha view to allow the user to roll again
         resend_gacha = ResendGacha()
@@ -100,7 +126,7 @@ class GachaView(discord.ui.View):
 
             common_item = ['HCoin']
             rare_item = ['Big Enter', 'JBL', 'Rimuru']
-            legend_item = ['Dvoom', 'Mechanical']
+            legend_item = ['Divoom', 'Mechanical']
 
             roll = roll_gacha(interaction.user.id)
             if roll in common_item:
@@ -109,11 +135,14 @@ class GachaView(discord.ui.View):
                 result = f"🟦 Rare: {roll}"
             elif roll in legend_item:
                 result = f"🟨 Legendary: {roll}"
+            else:
+                result = f"🟩 Common: {roll}"
 
             await self.send_gacha_results(interaction, [result])
         
         else:
             await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
+        
 
     @discord.ui.button(label="Roll Gacha x10 🎰", style=discord.ButtonStyle.primary, row=0)
     async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
