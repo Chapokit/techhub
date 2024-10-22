@@ -80,17 +80,19 @@ class GachaView(discord.ui.View):
         image_url = None
 
         if len(results) > 1:
+            # print(results)
             for result in results:
-                result = string.split(":")[1].strip()
+                
+                string = result.split(":")[1].strip()
                 maxfrag = {
-                'HCoin' : [user.inventory[result]],
+                'HCoin' : [user.inventory[string]],
                 'Big Enter': [3], 
                 'JBL': [3],
                 'Rimuru': [4],
                 'Divoom': [5],
                 'Mechanical': [5]
             }
-                embed.add_field(name = f"{result} fragment", value=f"`{user.inventory[result]}` / `{maxfrag[result]}`", inline=False)
+                embed.add_field(name = f"{result} Fragment `{user.inventory[string]}` / `{maxfrag[string]}`", value="", inline=False)
         else:
             string = results[0]
             result = string.split(":")[1].strip()
@@ -102,7 +104,7 @@ class GachaView(discord.ui.View):
                 'Divoom': 5,
                 'Mechanical': 5
             }
-            embed.add_field(name = f"{result} fragment", value=f"`{user.inventory[result]}` / `{maxfrag[result]}`", inline=False)
+            embed.add_field(name = f"{result} Fragment", value=f"`{user.inventory[result]}` / `{maxfrag[result]}`", inline=False)
 
             # Test whether the correct image is being added
             if result == "HCoin":
