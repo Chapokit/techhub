@@ -95,12 +95,12 @@ class GachaView(discord.ui.View):
             string = results[0]
             result = string.split(":")[1].strip()
             maxfrag = {
-                'HCoin' : [user.inventory[result]],
-                'Big Enter': [3], 
-                'JBL': [3],
-                'Rimuru': [4],
-                'Divoom': [5],
-                'Mechanical': [5]
+                'HCoin' : user.inventory[result],
+                'Big Enter': 3, 
+                'JBL': 3,
+                'Rimuru': 4,
+                'Divoom': 5,
+                'Mechanical': 5
             }
             embed.add_field(name = f"{result} fragment", value=f"{user.inventory[result]} / {maxfrag[result]}", inline=False)
 
