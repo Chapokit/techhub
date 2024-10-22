@@ -82,7 +82,8 @@ class GachaView(discord.ui.View):
             for result in results:
                 embed.add_field(name=result, value=" ", inline=False)
         else:
-            result = results[0]
+            string = results[0]
+            result = string.split(":")[1].strip()
             embed.add_field(name=result, value=" ", inline=False)
 
             # Test whether the correct image is being added
@@ -100,13 +101,22 @@ class GachaView(discord.ui.View):
                 image_url = "picture/mechanical.jpg"
             else:
                 image_url = None  # No image if no match found
+                print("None")
 
-            if image_url:
-                print(f"Image URL: {image_url}")  # Debugging line to check image URL
-                embed.set_image(url=image_url)
+            if image_url is not None:
+                with open(image_url, 'rb') as file:
+                    image_file = discord.File(file, os.path.basename(image_url))
+                embed.set_image(url=f"attachment://{os.path.basename(image_url)}")
+            else:
+                image_file = None  # No image to send
+                # You can handle this case as needed, e.g., send without an image
 
         # Send the embed message with the results
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        if image_file is not None:
+            await interaction.followup.send(embed=embed, file=image_file, ephemeral=True)
+        else:
+            await interaction.followup.send(embed=embed, ephemeral=True)  # Send without image
+
 
 
         # Send the ResendGacha view to allow the user to roll again
@@ -157,7 +167,7 @@ class GachaView(discord.ui.View):
 
             common_item = ['HCoin']
             rare_item = ['Big Enter', 'JBL', 'Rimuru']
-            legend_item = ['Dvoom', 'Mechanical']
+            legend_item = ['Divoom', 'Mechanical']
 
             results = []
             for _ in range(10):

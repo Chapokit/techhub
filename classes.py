@@ -17,7 +17,7 @@ class User(Document):
 
     # 3. Inventory (Dictionary field)
     inventory = fields.DictField(default=lambda: {'HCoin': 0, 'Big Enter': 0, 'JBL': 0, 'Rimuru': 0,
-                                                  'Dvoom': 0, 'Mechanical': 0})
+                                                  'Divoom': 0, 'Mechanical': 0})
 
     # 4. Gacha Roll
     roll_count = fields.IntField(default=0)

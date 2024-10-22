@@ -43,7 +43,7 @@ class TradeFragments(discord.ui.Select):
             elif item == "Rimuru":
                 trade_value = 4
                 item = f"🧢 {item}"
-            elif item == "Dvoom":
+            elif item == "Divoom":
                 trade_value = 5
                 item = f"🖥️ {item}"
             elif item == "Mechanical":
