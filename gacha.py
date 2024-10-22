@@ -75,17 +75,34 @@ class GachaView(discord.ui.View):
         await interaction.followup.send("Rolling in 1...", ephemeral=True)
         await asyncio.sleep(1)
 
-    async def send_gacha_results(self, interaction: discord.Interaction, results):
+    async def send_gacha_results(self, interaction: discord.Interaction, results, user):
         embed = discord.Embed(title="Gacha Results", description="You got:")
         image_url = None
 
         if len(results) > 1:
             for result in results:
-                embed.add_field(name=result, value=" ", inline=False)
+                result = string.split(":")[1].strip()
+                maxfrag = {
+                'HCoin' : [user.inventory[result]],
+                'Big Enter': [3], 
+                'JBL': [3],
+                'Rimuru': [4],
+                'Divoom': [5],
+                'Mechanical': [5]
+            }
+                embed.add_field(name = f"{result} fragment", value=f"{user.inventory[result]} / {maxfrag[result]}", inline=False)
         else:
             string = results[0]
             result = string.split(":")[1].strip()
-            embed.add_field(name=result, value=" ", inline=False)
+            maxfrag = {
+                'HCoin' : [user.inventory[result]],
+                'Big Enter': [3], 
+                'JBL': [3],
+                'Rimuru': [4],
+                'Divoom': [5],
+                'Mechanical': [5]
+            }
+            embed.add_field(name = f"{result} fragment", value=f"{user.inventory[result]} / {maxfrag[result]}", inline=False)
 
             # Test whether the correct image is being added
             if result == "HCoin":
@@ -148,7 +165,7 @@ class GachaView(discord.ui.View):
             else:
                 result = f"🟩 Common: {roll}"
 
-            await self.send_gacha_results(interaction, [result])
+            await self.send_gacha_results(interaction, [result], user)
         
         else:
             await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
@@ -179,7 +196,7 @@ class GachaView(discord.ui.View):
                 elif result in legend_item:
                     results.append(f"🟨 Legendary: {result}")
 
-            await self.send_gacha_results(interaction, results)
+            await self.send_gacha_results(interaction, results, user)
         
         else:
             await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
