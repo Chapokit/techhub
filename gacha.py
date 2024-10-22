@@ -77,6 +77,7 @@ class GachaView(discord.ui.View):
 
     async def send_gacha_results(self, interaction: discord.Interaction, results):
         embed = discord.Embed(title="Gacha Results", description="You got:")
+        image_url = None
 
         if len(results) > 1:
             for result in results:
@@ -101,15 +102,14 @@ class GachaView(discord.ui.View):
                 image_url = "picture/mechanical.jpg"
             else:
                 image_url = None  # No image if no match found
-                print("None")
 
-            if image_url is not None:
-                with open(image_url, 'rb') as file:
-                    image_file = discord.File(file, os.path.basename(image_url))
-                embed.set_image(url=f"attachment://{os.path.basename(image_url)}")
-            else:
-                image_file = None  # No image to send
-                # You can handle this case as needed, e.g., send without an image
+        if image_url is not None:
+            with open(image_url, 'rb') as file:
+                image_file = discord.File(file, os.path.basename(image_url))
+            embed.set_image(url=f"attachment://{os.path.basename(image_url)}")
+        else:
+            image_file = None  # No image to send
+            # You can handle this case as needed, e.g., send without an image
 
         # Send the embed message with the results
         if image_file is not None:
