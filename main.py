@@ -17,6 +17,7 @@ from classes import *
 from functions import *
 from gacha import *
 from shop import *
+from role_assignment import *
 
 load_dotenv()
 
@@ -340,14 +341,14 @@ async def on_ready():
             )
     
     # Open the image file in binary read mode
-    # image_path = 'picture/grey.png'
-    # with open(image_path, 'rb') as file:
-    #     image_file = discord.File(file, os.path.basename(image_path))
+    image_path = 'picture/grey.png'
+    with open(image_path, 'rb') as file:
+        image_file = discord.File(file, os.path.basename(image_path))
 
-    # # Set the image to the embed
-    # embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+    # Set the image to the embed
+    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
 
-    await gacha_channel.send(embed=embed, view=GachaView())
+    await gacha_channel.send(embed=embed, file=image_file, view=GachaView())
 
     leaderboard_channel_id = 1295940346320257086
     leaderboard = Leaderboard(bot, leaderboard_channel_id)
@@ -362,12 +363,40 @@ async def on_ready():
 
     embed = discord.Embed(title="Techhub's Shop")
 
-    # image_path = 'picture/grey.png'
-    # with open(image_path, 'rb') as file:
-    #     image_file = discord.File(file, os.path.basename(image_path))
-    # embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+    image_path = 'picture/grey.png'
+    with open(image_path, 'rb') as file:
+        image_file = discord.File(file, os.path.basename(image_path))
+    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
 
-    await shop_channel.send(embed=embed, view=ShopView())
+    await shop_channel.send(embed=embed, file=image_file, view=ShopView())
 
+    # Role
+
+    role_assignment_id = 1296477138999971972
+    role_channel = bot.get_channel(role_assignment_id)
+
+    first_category_view = FirstCategorySelect(
+        artist_role_id=1298894779098071071,  # Replace with actual role IDs
+        programmer_role_id=1298894836459503657,
+        gamedev_role_id=1298894836459503657,
+        other_role_id=1298894950829920287
+    )
+
+    second_category_roles = {
+        "3D Artist": 1298895009814155325,
+        "2D Artist": 1298895059160268922,
+        "Animator": 1298895103250927617,
+        "Music Composer": 1298895142094241844,
+        "Unity Dev": 1298895182581731358,
+        "Unreal Dev": 1298895228698234911,
+        "Roblox Dev": 1298895274118221845,
+        "C# Dev": 1298895314350243871,
+        "Python Dev": 1298895434131181688,
+    }
+
+    second_category_view = SecondCategorySelect(roles_mapping=second_category_roles)
+
+    await role_channel.send("Select your primary category roles:", view=first_category_view)
+    await role_channel.send("Select your specific roles:", view=second_category_view)
 
 bot.run(BOT_TOKEN)

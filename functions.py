@@ -9,7 +9,7 @@ import random
 import pprint
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-
+import math
 
 from classes import *
 
@@ -29,9 +29,11 @@ def roll_gacha(user_id):
     max_level = 20
     effective_level = min(effective_level, max_level)
 
-    # Calculate rarities based on level
-    common_rate = 100 - (0.75 * effective_level ** 1.5 + 1)
-    legend_rate = (100 - common_rate) * 0.03 * effective_level
+    # Exponential formula for legend rate, starting from 0.5% and capping at 5%
+    legend_rate = min(5, 0.5 * math.exp(0.15 * (effective_level - 1)))
+    
+    # Common and rare rates are adjusted based on the legend rate
+    common_rate = 100 - (legend_rate + (100 - legend_rate) * 0.25)
     rare_rate = 100 - common_rate - legend_rate
 
     # Generate a random number to determine the outcome
@@ -60,9 +62,11 @@ def check_rate(user_id):
     max_level = 20
     effective_level = min(effective_level, max_level)
 
-    # Calculate rarities based on level
-    common_rate = 100 - (0.75 * effective_level ** 1.5 + 1)
-    legend_rate = (100 - common_rate) * 0.03 * effective_level
+    # Exponential formula for legend rate, starting from 0.5% and capping at 5%
+    legend_rate = min(5, 0.5 * math.exp(0.15 * (effective_level - 1)))
+    
+    # Common and rare rates are adjusted based on the legend rate
+    common_rate = 100 - (legend_rate + (100 - legend_rate) * 0.25)
     rare_rate = 100 - common_rate - legend_rate
 
     return {

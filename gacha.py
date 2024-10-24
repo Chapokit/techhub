@@ -92,7 +92,12 @@ class GachaView(discord.ui.View):
                 'Divoom': 5,
                 'Mechanical': 5
             }
-                embed.add_field(name = f"{result} Fragment `{user.inventory[string]}` / `{maxfrag[string]}`", value="", inline=False)
+                if string == 'HCoin':
+                    embed.add_field(name = f"{result}", value="", inline=False)
+                    
+                else:
+                    embed.add_field(name = f"{result}", value="", inline=False)
+                    #  Fragment `{user.inventory[string]}` / `{maxfrag[string]}`
         else:
             string = results[0]
             result = string.split(":")[1].strip()
@@ -104,7 +109,11 @@ class GachaView(discord.ui.View):
                 'Divoom': 5,
                 'Mechanical': 5
             }
-            embed.add_field(name = f"{result} Fragment", value=f"`{user.inventory[result]}` / `{maxfrag[result]}`", inline=False)
+            if string == 'HCoin':
+                embed.add_field(name = f"{result}", value="", inline=False)
+            else:
+                embed.add_field(name = f"{result}", value="", inline=False)
+                #  Fragment `{user.inventory[string]}` / `{maxfrag[string]}`
 
             # Test whether the correct image is being added
             if result == "HCoin":
@@ -206,11 +215,12 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="Check Gacha Rate %", style=discord.ButtonStyle.primary, row=1)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
         gacha_rate = check_rate(user_id=interaction.user.id)
-        
+        user = User.objects(discord_id=str(interaction.user.id)).first()
         embed = discord.Embed(
-                            title="**GACHA RATE 🎰🤑**",
+                            title="**GACHA RATE 🎰**",
                             description=(
                                 f"**User Name:** ``{interaction.user.name}``\n"
+                                f"**Level:** ``{user.level}``\n"
                                 f"**Gacha Rate:**\n"
                                 f"🟩 **Common%:** ``{gacha_rate['Common%']:.2f}%``\n"
                                 f"🟦 **Rare%:** ``{gacha_rate['Rare%']:.2f}%``\n"
@@ -223,19 +233,19 @@ class GachaView(discord.ui.View):
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="Buy Prizes 🎁", style=discord.ButtonStyle.success, row=1)
-    async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = discord.Embed(
-            title="Prize Purchase",
-            description="To claim your prize, you need the following:",
-            color=discord.Color.green()
-        )
-        embed.add_field(name="Requirement 1", value="1000 coins", inline=False)
-        embed.add_field(name="Requirement 2", value="Level 5 or above", inline=False)
-        embed.add_field(name="Requirement 3", value="1 Gacha Roll", inline=False)
+    # @discord.ui.button(label="Buy Prizes 🎁", style=discord.ButtonStyle.success, row=1)
+    # async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #     embed = discord.Embed(
+    #         title="Prize Purchase",
+    #         description="To claim your prize, you need the following:",
+    #         color=discord.Color.green()
+    #     )
+    #     embed.add_field(name="Requirement 1", value="1000 coins", inline=False)
+    #     embed.add_field(name="Requirement 2", value="Level 5 or above", inline=False)
+    #     embed.add_field(name="Requirement 3", value="1 Gacha Roll", inline=False)
 
-        prize_view = PrizeView(user_id=interaction.user.id)
-        await interaction.response.send_message("Click the button below to claim your prize.", embed=embed, view=prize_view, ephemeral=True)
+    #     prize_view = PrizeView(user_id=interaction.user.id)
+    #     await interaction.response.send_message("Click the button below to claim your prize.", embed=embed, view=prize_view, ephemeral=True)
 
 
 class GachaResult(discord.ui.View):
