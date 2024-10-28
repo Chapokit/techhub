@@ -98,5 +98,6 @@ def create_user():
     )
     user.save()
 
-
-
+def is_in_allowed_channel(ctx):
+    ALLOWED_CHANNEL_ID = 1300038617166643211
+    return ctx.channel.id == ALLOWED_CHANNEL_ID

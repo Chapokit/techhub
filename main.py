@@ -12,12 +12,13 @@ from datetime import datetime, timedelta
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from mongoengine.errors import DoesNotExist
 
 from classes import *
 from functions import *
 from gacha import *
 from shop import *
-from role_assignment import *
+from user_commands import commands_list
 
 load_dotenv()
 
@@ -34,7 +35,7 @@ intents.voice_states = True
 intents.presences = True 
 intents.message_content = True  
 
-bot = commands.Bot(command_prefix=".", intents=discord.Intents.all())
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 class ShowMenu(discord.ui.View):
     def __init__(self):
@@ -120,10 +121,26 @@ class ShowMenu(discord.ui.View):
         else:
             await interaction.response.send_message("User not found.", ephemeral=True)
 
-    @discord.ui.button(label="Search Profile by ID/Name 🔎", style=discord.ButtonStyle.primary, row=1)
+    @discord.ui.button(label="Search Profile 🔎", style=discord.ButtonStyle.primary, row=1)
     async def search_profile(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create and show the modal for searching by ID or name
         await interaction.response.send_modal(SearchProfileModal())
+
+    @discord.ui.button(label="แลกของรางวัล 🎁", style=discord.ButtonStyle.primary, row=1)
+    async def combine_fragments(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Get the user from the database
+        user = User.objects(discord_id=str(interaction.user.id)).first()
+
+        if not user:
+            await interaction.response.send_message("User not found.", ephemeral=True)
+            return
+
+        # Create a view with the dropdown based on the user's inventory
+        view = TradeFragmentsView(user.inventory, user)
+
+        # Send the view with the dropdown to the user
+        await interaction.response.send_message("Select an item to combine: (ต้องมีชิ้นส่วนครบตามกำหนดถึงจะแลกได้):", view=view, ephemeral=True)
+
 
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
@@ -188,12 +205,10 @@ class SearchProfileModal(discord.ui.Modal):
         else:
             await interaction.response.send_message("User not found. Please try again.", ephemeral=True)
 
-
-
 # Dictionary to store user join times
 user_voice_time = {}
 
-INTERVAL_MINUTES = 0.5  # Adjust as necessary
+INTERVAL_MINUTES = 120  # Adjust as necessary
 
 @bot.event
 async def on_voice_state_update(member, before, after):
@@ -219,7 +234,7 @@ async def on_voice_state_update(member, before, after):
             user_voice_time[member.id]["join_time"] = None
 
 
-@tasks.loop(minutes=1.0)  # Run every x minute
+@tasks.loop(minutes=122.0)  # Run every x minute
 async def track_gacha_points():
     print("Tracking gacha points...")
     
@@ -276,30 +291,12 @@ async def on_member_join(member):
     except discord.Forbidden:
         print(f"Could not send a DM to {member.name}.")
 
-@bot.command(name="create_users")
-@commands.has_permissions(administrator=True)  # Only allow administrators to use this command
-async def create_users(ctx):
-    guild = ctx.guild  # Get the server (guild) where the command is executed
-    
-    # Iterate over all members of the server
-    for member in guild.members:
-        # Check if the member already has a User object in the MongoDB
-        try:
-            User.objects.get(discord_id=str(member.id))
-            print(f"User {member.name} already exists.")
-        except DoesNotExist:
-            # If user doesn't exist, create a new User document
-            new_user = User(
-                discord_id=str(member.id),
-                user_name=member.name  # You can use `member.display_name` if you prefer the display name
-            )
-            new_user.save()
-            print(f"Created new user for {member.name}.")
-
-    await ctx.send("User creation process completed!")
+for command in commands_list:
+    bot.add_command(command)
 
 @bot.event
 async def on_ready():
+
     print(f'Logged on as {bot.user}!')
     channel_id = 1295940243610144808
     channel = bot.get_channel(channel_id)
@@ -331,72 +328,11 @@ async def on_ready():
     else:
         print(f"Channel with ID {channel_id} not found.")
 
-    # Gacha
-
-    gacha_id = 1295940160415862865
-    gacha_channel = bot.get_channel(gacha_id)
-
-    embed = discord.Embed(
-                title="Techhub's Gacha"
-            )
-    
-    # Open the image file in binary read mode
-    image_path = 'picture/grey.png'
-    with open(image_path, 'rb') as file:
-        image_file = discord.File(file, os.path.basename(image_path))
-
-    # Set the image to the embed
-    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
-
-    await gacha_channel.send(embed=embed, file=image_file, view=GachaView())
-
-    leaderboard_channel_id = 1295940346320257086
-    leaderboard = Leaderboard(bot, leaderboard_channel_id)
-    
-    leaderboard.start_leaderboard_updates.start()
 
 
-    # Shop 
 
-    shop_id = 1297823533832863805
-    shop_channel = bot.get_channel(shop_id)
 
-    embed = discord.Embed(title="Techhub's Shop")
 
-    image_path = 'picture/grey.png'
-    with open(image_path, 'rb') as file:
-        image_file = discord.File(file, os.path.basename(image_path))
-    embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
 
-    await shop_channel.send(embed=embed, file=image_file, view=ShopView())
-
-    # Role
-
-    role_assignment_id = 1296477138999971972
-    role_channel = bot.get_channel(role_assignment_id)
-
-    first_category_view = FirstCategorySelect(
-        artist_role_id=1298894779098071071,  # Replace with actual role IDs
-        programmer_role_id=1298894836459503657,
-        gamedev_role_id=1298894836459503657,
-        other_role_id=1298894950829920287
-    )
-
-    second_category_roles = {
-        "3D Artist": 1298895009814155325,
-        "2D Artist": 1298895059160268922,
-        "Animator": 1298895103250927617,
-        "Music Composer": 1298895142094241844,
-        "Unity Dev": 1298895182581731358,
-        "Unreal Dev": 1298895228698234911,
-        "Roblox Dev": 1298895274118221845,
-        "C# Dev": 1298895314350243871,
-        "Python Dev": 1298895434131181688,
-    }
-
-    second_category_view = SecondCategorySelect(roles_mapping=second_category_roles)
-
-    await role_channel.send("Select your primary category roles:", view=first_category_view)
-    await role_channel.send("Select your specific roles:", view=second_category_view)
 
 bot.run(BOT_TOKEN)

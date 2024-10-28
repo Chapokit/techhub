@@ -212,7 +212,7 @@ class GachaView(discord.ui.View):
         else:
             await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
 
-    @discord.ui.button(label="Check Gacha Rate %", style=discord.ButtonStyle.primary, row=1)
+    @discord.ui.button(label="Check Gacha Rate %", style=discord.ButtonStyle.primary, row=0)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
         gacha_rate = check_rate(user_id=interaction.user.id)
         user = User.objects(discord_id=str(interaction.user.id)).first()

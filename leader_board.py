@@ -35,8 +35,7 @@ class RedisplayLeaderboard(discord.ui.View):
         await interaction.response.defer()  # Defer the response so the button interaction doesn't time out
 
 
-
-class Leaderboard:
+class Leaderboard(discord.ui.View):
     def __init__(self, bot, channel_id):
         self.bot = bot
         self.channel_id = channel_id
@@ -68,12 +67,7 @@ class Leaderboard:
             else:
                 await self.message.edit(embed=embed)  # Edit the existing message
 
-    @tasks.loop(minutes=5.0)  # Set the interval for leaderboard updates (e.g., every 5 minutes)
-    async def start_leaderboard_updates(self):
-        """Periodically update the leaderboard."""
+    async def display_leaderboard(self):
+        """Call this method to display the leaderboard once."""
         await self.update_leaderboard()
 
-    @start_leaderboard_updates.before_loop
-    async def before_updates(self):
-        """Wait for the bot to be fully ready before starting the loop."""
-        await self.bot.wait_until_ready()

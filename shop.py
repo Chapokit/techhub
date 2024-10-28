@@ -36,19 +36,19 @@ class TradeFragments(discord.ui.Select):
 
             # Set trade_value based on the item
             if item == "Big Enter":
-                trade_value = 3
+                trade_value = 5
                 display_name = f"⏎ {item}"
             elif item == "JBL":
-                trade_value = 3
+                trade_value = 5
                 display_name = f"🎧 {item}"
             elif item == "Rimuru":
-                trade_value = 4
+                trade_value = 5
                 display_name = f"🧢 {item}"
             elif item == "Divoom":
-                trade_value = 5
+                trade_value = 4
                 display_name = f"🖥️ {item}"
             elif item == "Mechanical":
-                trade_value = 5
+                trade_value = 6
                 display_name = f"⚙️ {item}"
             else:
                 trade_value = 1  # Set a default trade_value for any other items
@@ -68,11 +68,11 @@ class TradeFragments(discord.ui.Select):
 
         # Set the trade value for the selected item
         trade_values = {
-            "Big Enter": 3,
-            "JBL": 3,
-            "Rimuru": 4,
-            "Divoom": 5,
-            "Mechanical": 5
+            "Big Enter": 5,
+            "JBL": 5,
+            "Rimuru": 5,
+            "Divoom": 4,
+            "Mechanical": 6
         }
 
         trade_value = trade_values.get(selected_item, 1)  # Default trade value is 1 if not listed
@@ -85,8 +85,9 @@ class TradeFragments(discord.ui.Select):
             self.user.inventory[selected_item] -= trade_value
             self.user.traded_items.append(selected_item)
             self.user.save()
-
-            await interaction.response.send_message(f"Successfully traded for: {selected_item}", ephemeral=True)
+            
+            admin_mention = f"<@{458231861588656128}>"
+            await interaction.response.send_message(f"{self.user.user_name} traded for: `{selected_item}` (ทัก staff {admin_mention} เพื่อรับของรางวัลครับ)", ephemeral=True)
 
 
 class TradeFragmentsView(discord.ui.View):
@@ -112,6 +113,6 @@ class ShopView(discord.ui.View):
         view = TradeFragmentsView(user.inventory, user)
 
         # Send the view with the dropdown to the user
-        await interaction.response.send_message("Select an item to combine:", view=view, ephemeral=True)
+        await interaction.response.send_message("Select a prize to trade (ต้องมีชิ้นส่วนครบตามกำหนดถึงจะแลกได้):", view=view, ephemeral=True)
 
 # Assuming bot is defined elsewhere in your project
