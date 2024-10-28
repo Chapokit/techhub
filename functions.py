@@ -50,10 +50,16 @@ def roll_gacha(user_id):
         gacha_result = random.choice(legend_item)
 
     # Increment inventory count for the rolled item
-    user.inventory[gacha_result] += 1
-    user.save()
+    if gacha_result == "HCoin":
+        HCoins = random.randint(3,8)
+        user.inventory[gacha_result] += HCoins
+        user.save()
+    else:
+        user.inventory[gacha_result] += 1
+        user.save()
+        HCoins = 0
 
-    return gacha_result
+    return gacha_result, HCoins
 
 def check_rate(user_id):
     user = User.objects(discord_id=str(user_id)).first()

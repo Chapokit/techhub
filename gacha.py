@@ -83,14 +83,14 @@ class GachaView(discord.ui.View):
             # print(results)
             for result in results:
                 
-                string = result.split(":")[1].strip()
+                string = result.split(":")[1].split("x")[0].strip()
                 maxfrag = {
                 'HCoin' : user.inventory[string],
-                'Big Enter': 3, 
-                'JBL': 3,
-                'Rimuru': 4,
-                'Divoom': 5,
-                'Mechanical': 5
+                'Big Enter': 5, 
+                'JBL': 5,
+                'Rimuru': 5,
+                'Divoom': 4,
+                'Mechanical': 6
             }
                 if string == 'HCoin':
                     embed.add_field(name = f"{result}", value="", inline=False)
@@ -100,14 +100,14 @@ class GachaView(discord.ui.View):
                     #  Fragment `{user.inventory[string]}` / `{maxfrag[string]}`
         else:
             string = results[0]
-            result = string.split(":")[1].strip()
+            result = string.split(":")[1].split("x")[0].strip()
             maxfrag = {
-                'HCoin' : user.inventory[result],
-                'Big Enter': 3, 
-                'JBL': 3,
-                'Rimuru': 4,
-                'Divoom': 5,
-                'Mechanical': 5
+                'HCoin' : user.inventory[string],
+                'Big Enter': 5, 
+                'JBL': 5,
+                'Rimuru': 5,
+                'Divoom': 4,
+                'Mechanical': 6
             }
             if string == 'HCoin':
                 embed.add_field(name = f"{result}", value="", inline=False)
@@ -166,9 +166,9 @@ class GachaView(discord.ui.View):
             rare_item = ['Big Enter', 'JBL', 'Rimuru']
             legend_item = ['Divoom', 'Mechanical']
 
-            roll = roll_gacha(interaction.user.id)
+            roll, HCoins = roll_gacha(interaction.user.id)
             if roll in common_item:
-                result = f"🟩 Common: {roll}"
+                result = f"🟩 Common: {roll} x{HCoins}"
             elif roll in rare_item:
                 result = f"🟦 Rare: {roll}"
             elif roll in legend_item:
@@ -199,9 +199,9 @@ class GachaView(discord.ui.View):
 
             results = []
             for _ in range(10):
-                result = roll_gacha(interaction.user.id)
+                result, HCoins = roll_gacha(interaction.user.id)
                 if result in common_item:
-                    results.append(f"🟩 Common: {result}")
+                    results.append(f"🟩 Common: {result} x{HCoins}")
                 elif result in rare_item:
                     results.append(f"🟦  Rare: {result}")
                 elif result in legend_item:
