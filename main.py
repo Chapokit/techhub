@@ -142,7 +142,6 @@ class ShowMenu(discord.ui.View):
         # Send the view with the dropdown to the user
         await interaction.response.send_message("Select an item to combine: (ต้องมีชิ้นส่วนครบตามกำหนดถึงจะแลกได้):", view=view, ephemeral=True)
 
-
 class ProfileDisplay(discord.ui.View):
     def __init__(self, user_id, discord_user):
         super().__init__(timeout=None)
@@ -233,7 +232,6 @@ async def on_voice_state_update(member, before, after):
             print(f"{member.name} has spent {total_minutes:.2f} minutes in the voice channel.")
 
             user_voice_time[member.id]["join_time"] = None
-
 
 @tasks.loop(minutes=122.0)  # Run every x minute
 async def track_gacha_points():

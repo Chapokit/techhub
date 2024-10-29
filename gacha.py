@@ -24,34 +24,6 @@ intents.presences = True
 intents.message_content = True  
 
 
-class PrizeView(discord.ui.View):
-    def __init__(self, user_id):
-        super().__init__()
-        self.user_id = user_id
-
-    @discord.ui.button(label="Claim Prize 🎁", style=discord.ButtonStyle.success)
-    async def claim_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user = User.objects(discord_id=str(self.user_id)).first()
-        
-        if user:
-            # Check if the user has at least one of each fragment
-            if (user.fragment['fragment1'] >= 1 and
-                user.fragment['fragment2'] >= 1 and
-                user.fragment['fragment3'] >= 1):
-                
-                # Deduct one from each fragment
-                user.fragment['fragment1'] -= 1
-                user.fragment['fragment2'] -= 1
-                user.fragment['fragment3'] -= 1
-                
-                user.inventory.append("Mystery Prize")  # Assuming you have an inventory field
-                user.save()
-                
-                await interaction.response.send_message("You have claimed your prize! 🎉", ephemeral=True)
-            else:
-                await interaction.response.send_message("You need at least one of each fragment to claim this prize.", ephemeral=True)
-        else:
-            await interaction.response.send_message("User not found.", ephemeral=True)
 
 class ResendGacha(discord.ui.View):
     def __init__(self):
@@ -59,7 +31,8 @@ class ResendGacha(discord.ui.View):
 
     @discord.ui.button(label="Roll Again 🎰", style=discord.ButtonStyle.primary)
     async def roll_again(self, interaction: discord.Interaction, button: discord.ui.Button):
-        gacha_view = GachaView()  # Create a new instance of GachaView
+
+        gacha_view = GachaView()
         await interaction.response.send_message("Let's roll again!", view=gacha_view, ephemeral=True)
 
 class GachaView(discord.ui.View):
@@ -76,45 +49,28 @@ class GachaView(discord.ui.View):
         await asyncio.sleep(1)
 
     async def send_gacha_results(self, interaction: discord.Interaction, results, user, HCoins):
+
         embed = discord.Embed(title="Gacha Results", description="You got:")
         image_url = None
-        print(HCoins)
+
         if len(results) > 1:
-            
             for result in results:              
                 string = result.split(":")[1].split("x")[0].strip()
-            #     maxfrag = {
-            #     'HCoin' : user.inventory[string],
-            #     'Big Enter': 5, 
-            #     'JBL': 5,
-            #     'Rimuru': 5,
-            #     'Divoom': 4,
-            #     'Mechanical': 6
-            # }
+
                 if string == 'HCoin':
-                    embed.add_field(name = f"{result}", value="", inline=False)
-                    
+                    embed.add_field(name = f"{result}", value="", inline=False)                   
                 else:
                     embed.add_field(name = f"{result}", value="", inline=False)
-                    #  Fragment `{user.inventory[string]}` / `{maxfrag[string]}`
+
         else:
             string = results[0]
             result = string.split(":")[1].split("x")[0].strip()
-            # maxfrag = {
-            #     'HCoin' : user.inventory[string],
-            #     'Big Enter': 5, 
-            #     'JBL': 5,
-            #     'Rimuru': 5,
-            #     'Divoom': 4,
-            #     'Mechanical': 6
-            # }
-            if string == 'HCoin':
-                embed.add_field(name = f"{result}x{HCoins}", value="", inline=False)
+
+            if result == 'HCoin':
+                embed.add_field(name = f"{string}", value="", inline=False)
             else:
                 embed.add_field(name = f"{result}", value="", inline=False)
-                #  Fragment `{user.inventory[string]}` / `{maxfrag[string]}`
-
-            # Test whether the correct image is being added
+ 
             if result == "HCoin":
                 image_url = "picture/hcoin.png"
             elif result == "Big Enter":
@@ -152,6 +108,7 @@ class GachaView(discord.ui.View):
 
     @discord.ui.button(label="Roll Gacha x1 🎰", style=discord.ButtonStyle.primary, row=0)
     async def one_roll(self, interaction: discord.Interaction, button: discord.ui.Button):
+        
         user = User.objects(discord_id=str(interaction.user.id)).first()
         if user.roll_count > 0:
             user.roll_count -= 1
@@ -184,6 +141,7 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="Roll Gacha x10 🎰", style=discord.ButtonStyle.primary, row=0)
     async def ten_rolls(self, interaction: discord.Interaction, button: discord.ui.Button):
         user = User.objects(discord_id=str(interaction.user.id)).first()
+
         if user.roll_count >= 10:
             user.roll_count -= 10
             user.roll_all_time += 10
@@ -199,6 +157,7 @@ class GachaView(discord.ui.View):
             results = []
             for _ in range(10):
                 result, HCoins = roll_gacha(interaction.user.id)
+
                 if result in common_item:
                     results.append(f"🟩 Common: {result} x{HCoins}")
                 elif result in rare_item:
@@ -213,8 +172,10 @@ class GachaView(discord.ui.View):
 
     @discord.ui.button(label="Check Gacha Rate %", style=discord.ButtonStyle.primary, row=0)
     async def show_rate(self, interaction: discord.Interaction, button: discord.ui.Button):
+
         gacha_rate = check_rate(user_id=interaction.user.id)
         user = User.objects(discord_id=str(interaction.user.id)).first()
+
         embed = discord.Embed(
                             title="**GACHA RATE 🎰**",
                             description=(
@@ -228,32 +189,18 @@ class GachaView(discord.ui.View):
                             ),
                             color=discord.Color.darker_gray()
                         )
-
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    # @discord.ui.button(label="Buy Prizes 🎁", style=discord.ButtonStyle.success, row=1)
-    # async def buy_prize(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     embed = discord.Embed(
-    #         title="Prize Purchase",
-    #         description="To claim your prize, you need the following:",
-    #         color=discord.Color.green()
-    #     )
-    #     embed.add_field(name="Requirement 1", value="1000 coins", inline=False)
-    #     embed.add_field(name="Requirement 2", value="Level 5 or above", inline=False)
-    #     embed.add_field(name="Requirement 3", value="1 Gacha Roll", inline=False)
-
-    #     prize_view = PrizeView(user_id=interaction.user.id)
-    #     await interaction.response.send_message("Click the button below to claim your prize.", embed=embed, view=prize_view, ephemeral=True)
-
 
 class GachaResult(discord.ui.View):
     def __init__(self, user_id, discord_user):
         super().__init__()
+
         self.user_id = user_id
         self.discord_user = discord_user
 
     async def display_result(self, interaction: discord.Interaction):
+
         result = roll_gacha(self.user_id)
         await interaction.followup.send(result, ephemeral=True)
 

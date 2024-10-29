@@ -96,13 +96,6 @@ def level_up(user_id):
         user.level += 1
     user.save()
 
-def create_user():
-    
-    user = User(
-        discord_id = "888",
-        user_name = "Munyin"
-    )
-    user.save()
 
 def is_in_allowed_channel(ctx):
     ALLOWED_CHANNEL_ID = 1300038617166643211
