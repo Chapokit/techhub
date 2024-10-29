@@ -75,23 +75,22 @@ class GachaView(discord.ui.View):
         await interaction.followup.send("Rolling in 1...", ephemeral=True)
         await asyncio.sleep(1)
 
-    async def send_gacha_results(self, interaction: discord.Interaction, results, user):
+    async def send_gacha_results(self, interaction: discord.Interaction, results, user, HCoins):
         embed = discord.Embed(title="Gacha Results", description="You got:")
         image_url = None
-
+        print(HCoins)
         if len(results) > 1:
-            # print(results)
-            for result in results:
-                
+            
+            for result in results:              
                 string = result.split(":")[1].split("x")[0].strip()
-                maxfrag = {
-                'HCoin' : user.inventory[string],
-                'Big Enter': 5, 
-                'JBL': 5,
-                'Rimuru': 5,
-                'Divoom': 4,
-                'Mechanical': 6
-            }
+            #     maxfrag = {
+            #     'HCoin' : user.inventory[string],
+            #     'Big Enter': 5, 
+            #     'JBL': 5,
+            #     'Rimuru': 5,
+            #     'Divoom': 4,
+            #     'Mechanical': 6
+            # }
                 if string == 'HCoin':
                     embed.add_field(name = f"{result}", value="", inline=False)
                     
@@ -101,16 +100,16 @@ class GachaView(discord.ui.View):
         else:
             string = results[0]
             result = string.split(":")[1].split("x")[0].strip()
-            maxfrag = {
-                'HCoin' : user.inventory[string],
-                'Big Enter': 5, 
-                'JBL': 5,
-                'Rimuru': 5,
-                'Divoom': 4,
-                'Mechanical': 6
-            }
+            # maxfrag = {
+            #     'HCoin' : user.inventory[string],
+            #     'Big Enter': 5, 
+            #     'JBL': 5,
+            #     'Rimuru': 5,
+            #     'Divoom': 4,
+            #     'Mechanical': 6
+            # }
             if string == 'HCoin':
-                embed.add_field(name = f"{result}", value="", inline=False)
+                embed.add_field(name = f"{result}x{HCoins}", value="", inline=False)
             else:
                 embed.add_field(name = f"{result}", value="", inline=False)
                 #  Fragment `{user.inventory[string]}` / `{maxfrag[string]}`
@@ -176,7 +175,7 @@ class GachaView(discord.ui.View):
             else:
                 result = f"🟩 Common: {roll}"
 
-            await self.send_gacha_results(interaction, [result], user)
+            await self.send_gacha_results(interaction, [result], user, HCoins)
         
         else:
             await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)
@@ -207,7 +206,7 @@ class GachaView(discord.ui.View):
                 elif result in legend_item:
                     results.append(f"🟨 Legendary: {result}")
 
-            await self.send_gacha_results(interaction, results, user)
+            await self.send_gacha_results(interaction, results, user, HCoins)
         
         else:
             await interaction.response.send_message(f"You don't have enough gacha points. {user.roll_count} rolls left.", ephemeral=True)

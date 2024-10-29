@@ -2,7 +2,13 @@ import discord
 from discord.ext import commands
 
 intents = discord.Intents.default()
+intents = discord.Intents.default()
+intents.members = True
+intents.voice_states = True
+intents.presences = True 
+intents.message_content = True  
 intents.guilds = True
+
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -33,5 +39,13 @@ async def create_forum(ctx, forum_name, thread_title, message_content):
         await ctx.send("I don't have permissions to create a forum channel or thread.")
     except discord.HTTPException as e:
         await ctx.send(f"An error occurred: {e}")
+
+@bot.event
+async def on_thread_create(thread):
+    # check if the thread is in the desired channel
+    if thread.parent.name == "test":
+        # send a message to the thread
+        reply = f"Hello {thread.owner.mention}, please stay in this thread(Don't ping people in <@>) and do not make duplicates. If no one responds to your thread within 1hr, ping `WSC Tech Supporter` Thanks!"
+        await thread.send(reply)
 
 bot.run('MTI3NjAyMzk1MjExOTk1NTQ5Nw.GkWPyc.P_2qkzcVWrSu2uQv16a6_-qzG1zv3u07NKeOfg')

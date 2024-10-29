@@ -4,6 +4,16 @@ from mongoengine.errors import DoesNotExist  # Assuming you use mongoengine for 
 from leader_board import *
 from gacha import *
 
+intents = discord.Intents.default()
+intents.members = True
+intents.voice_states = True
+intents.presences = True 
+intents.message_content = True  
+intents.guilds = True
+
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
+
 ALLOWED_CHANNEL_ID = 1300038617166643211
 
 def is_in_allowed_channel(ctx):
@@ -77,22 +87,60 @@ class Forum:
         except discord.HTTPException as e:
             return f"An error occurred: {e}"
 
-# Command to trigger forum creation
-@commands.command(name="create_forum")
-async def create_forum(ctx, forum_name, thread_title, message_content):
-    guild = ctx.guild
+# # Command to trigger forum creation
+# @commands.command(name="create_forum")
+# async def create_forum(ctx, forum_name, thread_title, message_content):
+#     guild = ctx.guild
     
-    # Initialize the Forum class
-    forum = Forum(guild, forum_name, thread_title, message_content)
+#     # Initialize the Forum class
+#     forum = Forum(guild, forum_name, thread_title, message_content)
     
-    # Create the forum channel
-    create_forum_msg = await forum.create_forum_channel()
-    await ctx.send(create_forum_msg)
+#     # Create the forum channel
+#     create_forum_msg = await forum.create_forum_channel()
+#     await ctx.send(create_forum_msg)
 
-    # Create a thread in the forum
-    create_thread_msg = await forum.create_thread()
-    await ctx.send(create_thread_msg)
+#     # Create a thread in the forum
+#     create_thread_msg = await forum.create_thread()
+#     await ctx.send(create_thread_msg)
+
+@bot.command(name="create_post_in_forum")
+async def create_post_in_forum(ctx, forum_channel_id: int, thread_name: str, *, content: str):
+    # Fetch the forum channel using the provided channel ID
+    forum_channel = bot.get_channel(forum_channel_id)  # This will return None if not found
+    
+    if forum_channel is None:
+        try:
+            forum_channel = await bot.fetch_channel(forum_channel_id)
+        except discord.NotFound:
+            await ctx.send("Channel not found. Please check the channel ID.")
+            return
+        except discord.Forbidden:
+            await ctx.send("I do not have permission to access this channel.")
+            return
+        except Exception as e:
+            await ctx.send(f"Failed to fetch forum channel: {str(e)}")
+            return
+
+    # Check if the channel is indeed a forum channel
+    if isinstance(forum_channel, discord.ForumChannel):
+        try:
+            # Create a new thread (post) in the forum channel
+            thread = await forum_channel.create_thread(
+                name=thread_name,
+                content=content,
+                auto_archive_duration=60,  # Auto-archive after 60 minutes
+                reason="Creating a new post through command"
+            )
+            await ctx.send(f"Post created successfully in {forum_channel.name}! Thread: {thread.mention}")
+        except Exception as e:
+            await ctx.send(f"Failed to create post: {str(e)}")
+    else:
+        await ctx.send("The specified channel is not a forum channel.")
+
+@bot.command(name="create")
+async def create(ctx, arg: str):
+    channel = await ctx.guild.create_text_channel(arg, category=discord.utils.get(ctx.guild.categories, name='FORUM'))
 
 
 # Export the commands
-commands_list = [gacha_view, leaderboard_view, create_forum]
+commands_list = [gacha_view, leaderboard_view, create_post_in_forum, create]

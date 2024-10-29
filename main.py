@@ -330,10 +330,4 @@ async def on_ready():
         print(f"Channel with ID {channel_id} not found.")
 
 
-
-
-
-
-
-
 bot.run(BOT_TOKEN)
