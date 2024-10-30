@@ -142,10 +142,13 @@ class AdminMenu(discord.ui.View):
                     )
                     new_user.save()
                     count += 1  # Track how many users were created
-                    print(f"created {member.name}")
+                    print(f"Created {member.name}")
+                    
+                    # Add a slight delay between user creations (e.g., 0.1 seconds)
+                    await asyncio.sleep(0.1)
 
-        # Respond to the interaction
-        await interaction.response.send_message(f"Created {count} new User objects for members in the server!", ephemeral=True)
+        # Respond to the interaction once all users are created
+        await interaction.followup.send(f"Created {count} new User objects for members in the server!", ephemeral=True)
 
 
 
