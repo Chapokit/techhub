@@ -34,7 +34,6 @@ class RedisplayLeaderboard(discord.ui.View):
         await self.leaderboard.update_leaderboard()  # Call the update method
         await interaction.response.defer()  # Defer the response so the button interaction doesn't time out
 
-
 class Leaderboard(discord.ui.View):
     def __init__(self, bot, channel_id):
         self.bot = bot

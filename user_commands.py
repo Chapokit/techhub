@@ -76,6 +76,6 @@ async def create_channel(ctx, channel_name: str, category_name: str):
     except Exception as e:
         await ctx.send(f"Failed to create channels: {e}")
 
-
 # Export the commands
 commands_list = [gacha_view, leaderboard_view]
+

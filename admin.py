@@ -76,8 +76,6 @@ class QuestModal(discord.ui.Modal):
         # Send the dropdown menu for selecting difficulty
         await interaction.response.send_message("Select the difficulty for this quest:", view=view, ephemeral=True)
 
-
-# Step 2: Dropdown menu to select difficulty after submitting the modal
 class DifficultyDropdown(discord.ui.View):
     def __init__(self, quest_name, description, reward, due_date):
         super().__init__()
@@ -125,5 +123,28 @@ class AdminMenu(discord.ui.View):
     async def create_quest(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Show the QuestModal to collect quest info
         await interaction.response.send_modal(QuestModal())
+
+    @discord.ui.button(label="Create All Users 👦", style=discord.ButtonStyle.primary, row=0)
+    async def create_all_users(self, interaction: discord.Interaction, button: discord.ui.Button):
+        guild = interaction.guild  # Get the guild from the interaction
+        count = 0
+
+        for member in guild.members:
+            if not member.bot:  # Skip bots
+                # Check if user already exists in the database
+                existing_user = User.objects(discord_id=str(member.id)).first()
+
+                if existing_user is None:
+                    # Create new User document if not exists
+                    new_user = User(
+                        discord_id=str(member.id),
+                        user_name=member.name
+                    )
+                    new_user.save()
+                    count += 1  # Track how many users were created
+
+        # Respond to the interaction
+        await interaction.response.send_message(f"Created {count} new User objects for members in the server!", ephemeral=True)
+
 
 
