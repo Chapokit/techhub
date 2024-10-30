@@ -78,4 +78,4 @@ async def create_channel(ctx, channel_name: str, category_name: str):
 
 
 # Export the commands
-commands_list = [gacha_view, leaderboard_view, create_channel]
+commands_list = [gacha_view, leaderboard_view]

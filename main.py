@@ -355,6 +355,4 @@ async def on_ready():
     else:
         print(f"Channel with ID {admin_channel_id} not found.")
 
-
-
 bot.run(BOT_TOKEN)

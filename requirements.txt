@@ -1,4 +1,6 @@
 discord.py==2.0.0
+discord-py-slash-command==4.2.1
+discord-ui==5.1.6
 pymongo==4.5.0
 mongoengine==0.24.1
 python-dotenv==1.0.0
