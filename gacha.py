@@ -76,9 +76,9 @@ class GachaView(discord.ui.View):
             elif result == "Big Enter":
                 image_url = "picture/bigenter.jpg"
             elif result == "JBL":
-                image_url = "picture/jbl.jpg"
+                image_url = "picture/jbl.png"
             elif result == "Rimuru":
-                image_url = "picture/rimuru.png"
+                image_url = "picture/rimuru.jpg"
             elif result == "Divoom":
                 image_url = "picture/divoom.png"
             elif result == "Mechanical":

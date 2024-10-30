@@ -101,15 +101,15 @@ class DifficultySelect(discord.ui.Select):
 
         difficulty = self.values[0]
 
-        forum_channel_id = 1300849366424223794
+        forum_channel_id = 1301121119855841280
         forum_channel = interaction.guild.get_channel(forum_channel_id)
 
         thread = await forum_channel.create_thread(
             name=f"{self.parent_view.quest_name} ({difficulty})",
             content=(
                 f"**Quest Details**:\n{self.parent_view.description}\n"
-                f"\n**Reward** \n- {self.parent_view.reward}\n"
                 f"\n**Due Date** \n- {self.parent_view.due_date}"
+                f"\n**Reward** \n- {self.parent_view.reward}\n"
             ),
         )
 
@@ -142,6 +142,7 @@ class AdminMenu(discord.ui.View):
                     )
                     new_user.save()
                     count += 1  # Track how many users were created
+                    print(f"created {member.name}")
 
         # Respond to the interaction
         await interaction.response.send_message(f"Created {count} new User objects for members in the server!", ephemeral=True)

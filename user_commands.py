@@ -14,7 +14,7 @@ intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 
-ALLOWED_CHANNEL_ID = 1300038617166643211
+ALLOWED_CHANNEL_ID = 1289131500469747823 # 1300038617166643211
 
 def is_in_allowed_channel(ctx):
     return ctx.channel.id == ALLOWED_CHANNEL_ID

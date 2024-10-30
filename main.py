@@ -298,12 +298,12 @@ for command in commands_list:
 async def on_ready():
 
     print(f'Logged on as {bot.user}!')
-    channel_id = 1295940243610144808
-    admin_channel_id = 1301003240749666434
+    channel_id = 1299966397194960897 # 1295940243610144808
+    admin_channel_id = 1301130554405818389 # 1301003240749666434
 
     channel = bot.get_channel(channel_id)
     if channel is not None:
-        image_path = 'picture/grey.png'
+        image_path = 'picture/logo_v3.png'
         
         if os.path.isfile(image_path):
             embed = discord.Embed(
@@ -333,7 +333,7 @@ async def on_ready():
     admin_channel = bot.get_channel(admin_channel_id)
 
     if channel is not None:
-        image_path = 'picture/grey.png'
+        image_path = 'picture/logo_v3.png'
         
         if os.path.isfile(image_path):
             embed = discord.Embed(
