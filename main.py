@@ -19,6 +19,7 @@ from functions import *
 from gacha import *
 from shop import *
 from user_commands import commands_list
+from admin import *
 
 load_dotenv()
 
@@ -298,8 +299,9 @@ async def on_ready():
 
     print(f'Logged on as {bot.user}!')
     channel_id = 1295940243610144808
-    channel = bot.get_channel(channel_id)
+    admin_channel_id = 1301003240749666434
 
+    channel = bot.get_channel(channel_id)
     if channel is not None:
         image_path = 'picture/grey.png'
         
@@ -326,6 +328,33 @@ async def on_ready():
 
     else:
         print(f"Channel with ID {channel_id} not found.")
+
+    
+    admin_channel = bot.get_channel(admin_channel_id)
+
+    if channel is not None:
+        image_path = 'picture/grey.png'
+        
+        if os.path.isfile(image_path):
+            embed = discord.Embed(
+                title="Techhub's Admin Mainmenu", 
+                description="Select an option to proceed."
+            )
+            
+            with open(image_path, 'rb') as file:
+                image_file = discord.File(file, os.path.basename(image_path))
+                embed.set_image(url=f"attachment://{os.path.basename(image_path)}")
+                
+                await admin_channel.send(embed=embed, file=image_file, view=AdminMenu())
+        else:
+            embed = discord.Embed(
+                title="Techhub's Mainmenu", 
+                description="Select an option to proceed."
+            )
+
+    else:
+        print(f"Channel with ID {admin_channel_id} not found.")
+
 
 
 bot.run(BOT_TOKEN)

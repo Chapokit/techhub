@@ -48,7 +48,6 @@ async def leaderboard_view(ctx):
 
 @commands.command(name="create_channel")
 @commands.has_permissions(manage_channels=True)  # Ensure the user has permission to manage channels
-@commands.has_permissions(manage_channels=True)  # Ensure the user has permission to manage channels
 async def create_channel(ctx, channel_name: str, category_name: str):
     guild = ctx.guild  # Get the server (guild) where the command was used
 
