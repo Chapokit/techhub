@@ -18,7 +18,6 @@ from classes import *
 from functions import *
 from gacha import *
 from shop import *
-from user_commands import commands_list
 
 load_dotenv()
 
