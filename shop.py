@@ -59,6 +59,10 @@ class TradeFragments(discord.ui.Select):
                 # Use the full item name (with emoji) as the label but store the item name as value
                 options.append(discord.SelectOption(label=display_name, description=f"Your Amount: {value}/[Trade Value: {trade_value}]", value=item))
 
+        if not options:
+            # If there are no valid items, disable the dropdown
+            options.append(discord.SelectOption(label="No items available for trade", value="none", default=True))
+
         # Call the parent constructor with the options
         super().__init__(placeholder="Select an item to combine...", min_values=1, max_values=1, options=options)
 
@@ -92,7 +96,7 @@ class TradeFragments(discord.ui.Select):
 
 class TradeFragmentsView(discord.ui.View):
     def __init__(self, user_inventory, user):
-        super().__init__()
+        super().__init__(timeout=180)
         # Add the TradeFragments dropdown to this view
         self.add_item(TradeFragments(user_inventory, user))
 

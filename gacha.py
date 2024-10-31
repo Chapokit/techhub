@@ -72,17 +72,17 @@ class GachaView(discord.ui.View):
                 embed.add_field(name = f"{result}", value="", inline=False)
  
             if result == "HCoin":
-                image_url = "picture/hcoin.png"
+                image_url = "picture/coin.png"
             elif result == "Big Enter":
-                image_url = "picture/bigenter.jpg"
+                image_url = "picture/big_enter.png"
             elif result == "JBL":
                 image_url = "picture/jbl.png"
             elif result == "Rimuru":
                 image_url = "picture/rimuru.jpg"
             elif result == "Divoom":
-                image_url = "picture/divoom.png"
+                image_url = "picture/dvoom.png"
             elif result == "Mechanical":
-                image_url = "picture/mechanical.jpg"
+                image_url = "picture/mechanical.png"
             else:
                 image_url = None  # No image if no match found
 
