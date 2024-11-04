@@ -3,6 +3,9 @@ from discord.ext import commands
 from mongoengine.errors import DoesNotExist  # Assuming you use mongoengine for MongoDB
 from leader_board import *
 from gacha import *
+import asyncio
+from discord import ButtonStyle, Interaction
+from discord.ui import Button, View
 
 intents = discord.Intents.default()
 intents.members = True
@@ -14,7 +17,7 @@ intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 
-ALLOWED_CHANNEL_ID = 1289131500469747823 # 1300038617166643211
+ALLOWED_CHANNEL_ID = 1300038617166643211
 
 def is_in_allowed_channel(ctx):
     return ctx.channel.id == ALLOWED_CHANNEL_ID
@@ -76,6 +79,61 @@ async def create_channel(ctx, channel_name: str, category_name: str):
     except Exception as e:
         await ctx.send(f"Failed to create channels: {e}")
 
+@commands.command(name="send_message_all")
+@commands.has_permissions(administrator=True)  # Only admins can use this command
+async def send_message_all(ctx, *, message: str):
+    guild = ctx.guild  # Get the server (guild)
+
+    if not message:
+        await ctx.send("You need to provide a message to send.")
+        return
+
+    # Confirming the message before sending to all members
+    await ctx.send(f"Sending this message to all members:\n\n{message}\n\nType 'yes' to confirm.")
+
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() == "yes"
+
+    try:
+        await bot.wait_for("message", timeout=30.0, check=check)  # Wait for confirmation
+    except asyncio.TimeoutError:
+        await ctx.send("You took too long to respond. Canceling message.")
+        return
+
+    # Send message to all members
+    sent_count = 0
+    failed_count = 0
+
+    for member in guild.members:
+        if member.bot:  # Skip bots
+            continue
+        try:
+            await member.send(message)  # Send the private message (DM)
+            sent_count += 1
+        except discord.Forbidden:
+            failed_count += 1  # Failed to send (likely due to privacy settings)
+
+        # Add a short delay to avoid rate limits
+        await asyncio.sleep(1)
+
+    # Provide feedback to the user
+    await ctx.send(f"Message sent to {sent_count} members. Failed to send to {failed_count} members (likely due to privacy settings).")
+
+    # Create a button to opt out of receiving messages
+    opt_out_button = Button(label="I don't want to get messages from TechHub", style=discord.ButtonStyle.red)
+
+    async def opt_out_callback(interaction: discord.Interaction):
+        # Logic to handle the opt-out (e.g., save to a database or list)
+        await interaction.response.send_message("You have opted out of receiving messages from TechHub.", ephemeral=True)
+
+    opt_out_button.callback = opt_out_callback
+    view = View()
+    view.add_item(opt_out_button)
+
+    # Send the opt-out button to the channel
+    await ctx.send("If you no longer wish to receive messages from TechHub, click the button below:", view=view)
+
+
 # Export the commands
-commands_list = [gacha_view, leaderboard_view]
+commands_list = [gacha_view, leaderboard_view, send_message_all]
 
