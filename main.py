@@ -39,6 +39,9 @@ intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
+MAINMENU_CHANNEL_ID = 1299966397194960897
+ADMIN_CHANNEL_ID = 1301130554405818389
+
 class ShowMenu(discord.ui.View):
     def __init__(self):
         super().__init__()
@@ -281,15 +284,15 @@ async def on_member_join(member):
         new_user.save()
         print(f"Created new user for {member.name}.")
 
-    # You can send a welcome message if you want
-    channel = member.guild.system_channel  # Or specify a different channel
-    if channel is not None:
-        await channel.send(f"Welcome {member.mention}! Your user profile has been created.")
+    # # You can send a welcome message if you want
+    # channel = member.guild.system_channel  # Or specify a different channel
+    # if channel is not None:
+    #     await channel.send(f"Welcome {member.mention}! Your user profile has been created.")
 
-    try:
-        await member.send(f"Hey {member.name}, welcome to the server! If you have any questions, feel free to ask.")
-    except discord.Forbidden:
-        print(f"Could not send a DM to {member.name}.")
+    # try:
+    #     await member.send(f"Hey {member.name}, welcome to the server! If you have any questions, feel free to ask.")
+    # except discord.Forbidden:
+    #     print(f"Could not send a DM to {member.name}.")
 
 for command in commands_list:
     bot.add_command(command)
@@ -298,8 +301,11 @@ for command in commands_list:
 async def on_ready():
 
     print(f'Logged on as {bot.user}!')
-    channel_id = 1295940243610144808
-    admin_channel_id = 1301003240749666434
+    # Gacha Tracking
+    track_gacha_points.start()
+
+    channel_id = MAINMENU_CHANNEL_ID
+    admin_channel_id = ADMIN_CHANNEL_ID
 
     channel = bot.get_channel(channel_id)
     if channel is not None:
@@ -354,5 +360,6 @@ async def on_ready():
 
     else:
         print(f"Channel with ID {admin_channel_id} not found.")
+
 
 bot.run(BOT_TOKEN)

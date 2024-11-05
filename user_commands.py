@@ -16,11 +16,15 @@ intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
-
-ALLOWED_CHANNEL_ID = 1300038617166643211
+# BOT COMMAND CHANNEL
+ALLOWED_CHANNEL_ID = 1289131500469747823
+ADMIN_CHANNEL_ID = 1301130554405818389
 
 def is_in_allowed_channel(ctx):
     return ctx.channel.id == ALLOWED_CHANNEL_ID
+
+def is_in_allowed_admin_channel(ctx):
+    return ctx.channel.id == ADMIN_CHANNEL_ID
 
 @commands.command(name="gacha", help="Perform a gacha pull")
 async def gacha_view(ctx):
@@ -82,8 +86,14 @@ async def create_channel(ctx, channel_name: str, category_name: str):
 @commands.command(name="send_message_all")
 @commands.has_permissions(administrator=True)  # Only admins can use this command
 async def send_message_all(ctx, *, message: str):
+    
+    if not is_in_allowed_admin_channel(ctx):
+        allowed_channel_mention = f"<#{1301130554405818389}>"
+        embed = discord.Embed(title="Error", description=f"Please use the command in {allowed_channel_mention}.", color=discord.Color.red())
+        await ctx.send(embed=embed)
+        return
     guild = ctx.guild  # Get the server (guild)
-
+    
     if not message:
         await ctx.send("You need to provide a message to send.")
         return
@@ -95,7 +105,8 @@ async def send_message_all(ctx, *, message: str):
         return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() == "yes"
 
     try:
-        await bot.wait_for("message", timeout=30.0, check=check)  # Wait for confirmation
+        # Use ctx.bot.wait_for to ensure we're working with the correct bot instance
+        await ctx.bot.wait_for("message", timeout=30.0, check=check)  # Wait for confirmation
     except asyncio.TimeoutError:
         await ctx.send("You took too long to respond. Canceling message.")
         return
@@ -119,19 +130,6 @@ async def send_message_all(ctx, *, message: str):
     # Provide feedback to the user
     await ctx.send(f"Message sent to {sent_count} members. Failed to send to {failed_count} members (likely due to privacy settings).")
 
-    # Create a button to opt out of receiving messages
-    opt_out_button = Button(label="I don't want to get messages from TechHub", style=discord.ButtonStyle.red)
-
-    async def opt_out_callback(interaction: discord.Interaction):
-        # Logic to handle the opt-out (e.g., save to a database or list)
-        await interaction.response.send_message("You have opted out of receiving messages from TechHub.", ephemeral=True)
-
-    opt_out_button.callback = opt_out_callback
-    view = View()
-    view.add_item(opt_out_button)
-
-    # Send the opt-out button to the channel
-    await ctx.send("If you no longer wish to receive messages from TechHub, click the button below:", view=view)
 
 
 # Export the commands
